@@ -82,9 +82,8 @@ Lobby + two playable prototypes (**Coin Drop**, **Block Stacker**) + full brand 
 
 ## Links
 
-- Repo: [github.com/buildtogetherlabs/coinup](https://github.com/buildtogetherlabs/coinup)
+- Repo: [github.com/bryanxbt/coinup](https://github.com/bryanxbt/coinup)
 - Arch Network: [arch.network](https://arch.network)
-- Build Together Labs: [github.com/buildtogetherlabs](https://github.com/buildtogetherlabs)
 
 ## License
 
