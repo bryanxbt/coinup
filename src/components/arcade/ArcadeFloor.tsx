@@ -4,19 +4,25 @@ import Image from "next/image";
 import { useMemo, useState } from "react";
 import { TypeText } from "@/components/arcade/TypeText";
 import { PixelCabinet } from "@/components/arcade/PixelCabinet";
+import { presenceLabel, useArcadePresence } from "@/hooks/useArcadePresence";
 import { FLOOR_META, getFloorCabinets } from "@/lib/arcade-floor";
 import { withBase } from "@/lib/paths";
 
 /**
  * Interactive Cabinet Hall — top-down / front-row arcade floor.
  * Click a live cabinet to play. Soon cabinets stay dark with WIP tape.
+ * Presence: concurrent visitors via Yjs/WebRTC (no CoinUp backend).
  */
 export function ArcadeFloor() {
   const cabinets = useMemo(() => getFloorCabinets(), []);
+  const presence = useArcadePresence();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [statusLine, setStatusLine] = useState(
     "WALK THE FLOOR · CLICK A CABINET",
   );
+
+  const liveCount = cabinets.filter((c) => c.game.status === "playable").length;
+  const soonCount = cabinets.filter((c) => c.game.status !== "playable").length;
 
   const rows = useMemo(() => {
     const map = new Map<number, typeof cabinets>();
@@ -41,16 +47,27 @@ export function ArcadeFloor() {
           <p className="floor-hud-zone">{FLOOR_META.zone}</p>
           <h2 className="floor-hud-title">{FLOOR_META.room}</h2>
         </div>
-        <div className="floor-hud-chip">
-          <Image
-            src={withBase("/images/chip-arcade-manager-32.png")}
-            alt=""
-            width={28}
-            height={28}
-            unoptimized
-            className="pixelated"
-          />
-          <span>{FLOOR_META.managerNote}</span>
+        <div className="floor-hud-right">
+          <div
+            className={`floor-presence floor-presence--${presence.status}`}
+            title={
+              presence.peers.map((p) => p.name).join(", ") || "Connecting…"
+            }
+          >
+            <span className="floor-presence-dot" />
+            <span>{presenceLabel(presence)}</span>
+          </div>
+          <div className="floor-hud-chip">
+            <Image
+              src={withBase("/images/chip-arcade-manager-32.png")}
+              alt=""
+              width={28}
+              height={28}
+              unoptimized
+              className="pixelated"
+            />
+            <span>{FLOOR_META.managerNote}</span>
+          </div>
         </div>
       </div>
 
@@ -126,19 +143,20 @@ export function ArcadeFloor() {
           <span className="floor-status-dot" />
           <span className="floor-status-text">{statusLine}</span>
           {selected && selected.status === "playable" && (
-            <span className="floor-status-hint">CLICK AGAIN / OPEN TO PLAY</span>
+            <span className="floor-status-hint">OPEN TO PLAY</span>
+          )}
+          {presence.count > 1 && (
+            <span className="floor-status-players">
+              {presence.count} PLAYERS HERE
+            </span>
           )}
         </div>
       </div>
 
       <p className="floor-legend">
-        <span className="floor-legend-live">■ LIVE</span>
-        <span className="floor-legend-soon">■ COMING SOON</span>
-        <span className="floor-legend-note">
-          {cabinets.filter((c) => c.game.status === "playable").length} ONLINE ·{" "}
-          {cabinets.filter((c) => c.game.status !== "playable").length} IN
-          TRANSIT
-        </span>
+        <span className="floor-legend-live">■ {liveCount} LIVE CABINETS</span>
+        <span className="floor-legend-soon">■ {soonCount} IN TRANSIT</span>
+        <span className="floor-legend-note">{presenceLabel(presence)}</span>
       </p>
     </section>
   );

@@ -302,6 +302,13 @@ body::after {
   margin: 0;
 }
 
+.floor-hud-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
 .floor-hud-chip {
   display: flex;
   align-items: center;
@@ -312,6 +319,54 @@ body::after {
   font-family: var(--font-pixel), monospace;
   font-size: 8px;
   color: var(--crt-green);
+}
+
+.floor-presence {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 2px solid var(--crt-green);
+  background: #001408;
+  padding: 6px 10px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 8px;
+  color: var(--crt-green);
+}
+
+.floor-presence--connecting {
+  border-color: #5c5c6b;
+  color: #5c5c6b;
+  background: #0a0a10;
+}
+
+.floor-presence--solo {
+  border-color: var(--varsity-gold);
+  color: var(--varsity-gold);
+  background: #120e00;
+}
+
+.floor-presence--online {
+  border-color: var(--crt-green);
+  color: var(--crt-green);
+  box-shadow: 0 0 12px rgba(0, 222, 118, 0.25);
+}
+
+.floor-presence--blocked {
+  border-color: #5c5c6b;
+  color: #5c5c6b;
+}
+
+.floor-presence-dot {
+  width: 8px;
+  height: 8px;
+  background: currentColor;
+  animation: cursor-blink 0.9s step-end infinite;
+  flex-shrink: 0;
+}
+
+.floor-status-players {
+  color: var(--neon-magenta);
+  font-size: 7px;
 }
 
 .floor-tagline {
