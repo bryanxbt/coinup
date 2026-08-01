@@ -117,15 +117,15 @@ export function RockPaperScissors({ session, onScore, onExit }: GamePlayProps) {
       {(view.status === "queued" || view.status === "connecting") && (
         <div className="pixel-panel w-full border-[var(--crt-green)] p-5 text-center">
           <p className="font-pixel text-[9px] leading-relaxed text-[var(--crt-green)]">
-            {view.status === "connecting"
-              ? "OPENING LIVE ROOM…"
-              : "WAITING FOR ANOTHER PLAYER ON THE FLOOR TO INSERT COIN…"}
+            {view.message}
           </p>
           <p className="mt-3 font-pixel text-[8px] text-[#5c5c6b]">
-            QUEUE {view.queueSize} · YOU ARE IN
+            LIVE DUEL ROOM · BOTH MUST PAY ENTRY
           </p>
           <p className="mt-4 font-pixel text-[7px] leading-relaxed text-[#3a3a44]">
-            BOTH PLAYERS PAY ENTRY. WINNER TAKES THE FULL POT.
+            OPEN THIS CABINET IN TWO BROWSERS (OR TABS), INSERT COIN ON BOTH.
+            WINNER TAKES THE FULL POT. ALLOW CAMERA/MIC PROMPTS IF SHOWN (SOME
+            BROWSERS GATE WEBRTC).
           </p>
           <button
             type="button"

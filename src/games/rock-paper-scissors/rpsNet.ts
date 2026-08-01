@@ -1,22 +1,27 @@
 /**
- * Live RPS matchmaking + match state over Yjs / y-webrtc.
- * Room is shared by all paid RPS players on the floor.
+ * Live RPS matchmaking via PeerJS (free cloud broker).
+ *
+ * y-webrtc was too flaky across browsers (both players stuck in queue).
+ * PeerJS: first player claims a seat host ID; second connects as guest.
+ * Host owns match state and broadcasts updates.
  */
 
-import type { LiveMatch, LobbyPlayer, RpsChoice, Seat } from "./logic";
+import type { LiveMatch, RpsChoice, Seat } from "./logic";
 import {
   advanceAfterReveal,
   applyPick,
   emptyMatch,
 } from "./logic";
 
-const ROOM = "coinup-rps-live-v1";
+const SEAT_PREFIX = "coinup-rps-seat-v3-";
+const SEAT_COUNT = 8;
+/** Also mirror matchmaking on BroadcastChannel (same browser, two tabs). */
+const BC_NAME = "coinup-rps-bc-v3";
 
 export type RpsNetHandle = {
   playerId: string;
   destroy: () => void;
   setPick: (choice: RpsChoice) => void;
-  /** Practice mode — no network */
   isPractice: boolean;
 };
 
@@ -38,6 +43,13 @@ type Callbacks = {
   onWin: (potSats: number, match: LiveMatch) => void;
 };
 
+type WireMsg =
+  | { type: "hello"; seat: Seat; entrySats: number }
+  | { type: "match"; match: LiveMatch }
+  | { type: "pick"; playerId: string; choice: RpsChoice }
+  | { type: "state"; match: LiveMatch }
+  | { type: "ping" };
+
 export async function joinRpsLive(opts: {
   playerId: string;
   name: string;
@@ -46,203 +58,390 @@ export async function joinRpsLive(opts: {
   practice?: boolean;
   callbacks: Callbacks;
 }): Promise<RpsNetHandle> {
-  if (opts.practice) {
-    return joinPractice(opts);
-  }
+  if (opts.practice) return joinPractice(opts);
 
-  const Y = await import("yjs");
-  const { WebrtcProvider } = await import("y-webrtc");
-
-  const doc = new Y.Doc();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let provider: any = null;
-  let destroyed = false;
-  let winClaimed = false;
-  let myMatchId: string | null = null;
-
-  const yLobby = doc.getMap<LobbyPlayer>("lobby");
-  const yMatches = doc.getMap<LiveMatch>("matches");
-
-  const seat: Seat = {
+  const mySeat: Seat = {
     id: opts.playerId,
     name: opts.name,
     sessionId: opts.sessionId,
     joinedAt: Date.now(),
   };
 
-  const emit = () => {
-    if (destroyed) return;
-    const lobby = [...yLobby.values()];
-    const waiting = lobby.filter((p) => !p.matchId);
-    const me = yLobby.get(opts.playerId);
-    const matchId = me?.matchId ?? myMatchId;
-    const match = matchId ? yMatches.get(matchId) ?? null : null;
+  let destroyed = false;
+  let winClaimed = false;
+  let match: LiveMatch | null = null;
+  let role: "host" | "guest" | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let peer: any = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let conn: any = null;
+  let bc: BroadcastChannel | null = null;
 
+  const emit = (status: RpsNetView["status"], message: string, queueSize = 1) => {
+    if (destroyed) return;
     if (match?.winnerId === opts.playerId && match.phase === "finished" && !winClaimed) {
       winClaimed = true;
       opts.callbacks.onWin(match.potSats, match);
     }
+    opts.callbacks.onView({
+      status,
+      message,
+      match,
+      queueSize,
+    });
+  };
 
-    if (match) {
-      opts.callbacks.onView({
-        status: match.phase === "finished" ? "finished" : "matched",
-        message:
-          match.phase === "finished"
-            ? match.winnerId === opts.playerId
-              ? "YOU WIN THE POT"
-              : "YOU LOSE — BETTER LUCK"
-            : match.phase === "reveal"
-              ? "ROUND RESULT"
-              : `ROUND ${match.round} · LOCK IN`,
-        match,
-        queueSize: waiting.length,
-      });
-      return;
+  const broadcastState = () => {
+    if (!match) return;
+    const msg: WireMsg = { type: "state", match };
+    try {
+      conn?.send(msg);
+    } catch {
+      /* ignore */
     }
-
-    opts.callbacks.onView({
-      status: "queued",
-      message: "WAITING FOR OPPONENT TO INSERT COIN…",
-      match: null,
-      queueSize: Math.max(1, waiting.length),
-    });
+    try {
+      bc?.postMessage({ ...msg, channel: "state" });
+    } catch {
+      /* ignore */
+    }
   };
 
-  const tryPair = () => {
-    if (destroyed) return;
-    const waiting = [...yLobby.values()]
-      .filter((p) => !p.matchId)
-      .sort((a, b) => a.joinedAt - b.joinedAt || a.id.localeCompare(b.id));
-
-    if (waiting.length < 2) return;
-
-    // Deterministic host = earliest joiner (then id)
-    const host = waiting[0];
-    if (host.id !== opts.playerId) return;
-
-    const a = waiting[0];
-    const b = waiting[1];
-    const matchId = `rps_${a.id.slice(-6)}_${b.id.slice(-6)}_${Date.now().toString(36)}`;
-    const match = emptyMatch(
-      matchId,
-      {
-        id: a.id,
-        name: a.name,
-        sessionId: a.sessionId,
-        joinedAt: a.joinedAt,
-      },
-      {
-        id: b.id,
-        name: b.name,
-        sessionId: b.sessionId,
-        joinedAt: b.joinedAt,
-      },
-      opts.entrySats,
-    );
-
-    doc.transact(() => {
-      yMatches.set(matchId, match);
-      const a2 = { ...a, matchId };
-      const b2 = { ...b, matchId };
-      yLobby.set(a.id, a2);
-      yLobby.set(b.id, b2);
-    });
-    myMatchId = matchId;
+  const setMatch = (m: LiveMatch, status?: RpsNetView["status"]) => {
+    match = m;
+    const st =
+      status ??
+      (m.phase === "finished"
+        ? "finished"
+        : ("matched" as const));
+    const message =
+      m.phase === "finished"
+        ? m.winnerId === opts.playerId
+          ? "YOU WIN THE POT"
+          : "YOU LOSE — BETTER LUCK"
+        : m.phase === "reveal"
+          ? "ROUND RESULT"
+          : `ROUND ${m.round} · LOCK IN`;
+    emit(st, message, 2);
+    if (role === "host") broadcastState();
+    if (m.phase === "reveal" && !m.winnerId) {
+      window.setTimeout(() => {
+        if (destroyed || !match || match.phase !== "reveal") return;
+        if (role === "host") {
+          match = advanceAfterReveal(match);
+          setMatch(match);
+        }
+      }, 1800);
+    }
   };
 
-  const maybeAdvance = (match: LiveMatch) => {
-    if (match.phase !== "reveal" || match.winnerId) return;
-    // Both clients schedule advance; first write wins via identical state
-    window.setTimeout(() => {
+  const onRemotePick = (playerId: string, choice: RpsChoice) => {
+    if (!match || role !== "host") return;
+    match = applyPick(match, playerId, choice);
+    setMatch(match);
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const wireConn = (c: any, asHost: boolean) => {
+    conn = c;
+    c.on("data", (raw: unknown) => {
+      const msg = raw as WireMsg;
+      if (!msg || typeof msg !== "object") return;
+
+      if (msg.type === "hello" && asHost && !match) {
+        const m = emptyMatch(
+          `rps_${mySeat.id.slice(-4)}_${msg.seat.id.slice(-4)}_${Date.now().toString(36)}`,
+          mySeat,
+          msg.seat,
+          Math.max(opts.entrySats, msg.entrySats),
+        );
+        setMatch(m);
+        try {
+          c.send({ type: "match", match: m } satisfies WireMsg);
+        } catch {
+          /* ignore */
+        }
+        return;
+      }
+
+      if (msg.type === "match" && !asHost) {
+        setMatch(msg.match);
+        return;
+      }
+
+      if (msg.type === "state") {
+        match = msg.match;
+        setMatch(msg.match);
+        return;
+      }
+
+      if (msg.type === "pick" && asHost) {
+        onRemotePick(msg.playerId, msg.choice);
+      }
+    });
+
+    c.on("close", () => {
       if (destroyed) return;
-      const current = yMatches.get(match.id);
-      if (!current || current.phase !== "reveal") return;
-      const next = advanceAfterReveal(current);
-      yMatches.set(match.id, next);
-    }, 1800);
+      if (match?.phase !== "finished") {
+        emit("error", "OPPONENT DISCONNECTED", 1);
+      }
+    });
+
+    c.on("open", () => {
+      if (!asHost) {
+        try {
+          c.send({
+            type: "hello",
+            seat: mySeat,
+            entrySats: opts.entrySats,
+          } satisfies WireMsg);
+        } catch {
+          /* ignore */
+        }
+      } else {
+        emit("queued", "OPPONENT LINKING…", 2);
+      }
+    });
   };
 
+  const destroy = () => {
+    destroyed = true;
+    try {
+      conn?.close();
+    } catch {
+      /* ignore */
+    }
+    try {
+      peer?.destroy();
+    } catch {
+      /* ignore */
+    }
+    try {
+      bc?.close();
+    } catch {
+      /* ignore */
+    }
+  };
+
+  emit("connecting", "OPENING LIVE LINK…", 0);
+
+  // --- BroadcastChannel path (two tabs, same browser) ---
   try {
-    provider = new WebrtcProvider(ROOM, doc);
+    bc = new BroadcastChannel(BC_NAME);
+    bc.onmessage = (ev) => {
+      const data = ev.data as WireMsg & { fromId?: string; wantMatch?: boolean };
+      if (!data || data.fromId === opts.playerId) return;
 
-    yLobby.set(opts.playerId, {
-      id: opts.playerId,
-      name: opts.name,
-      sessionId: opts.sessionId,
-      joinedAt: seat.joinedAt,
-      matchId: null,
-    });
+      if (data.type === "hello" && role === "host" && !match && data.wantMatch) {
+        // Guest announced via BC — host creates match and posts it
+        const guestSeat = (data as unknown as { seat: Seat }).seat;
+        if (!guestSeat) return;
+        const m = emptyMatch(
+          `rps_bc_${Date.now().toString(36)}`,
+          mySeat,
+          guestSeat,
+          opts.entrySats,
+        );
+        setMatch(m);
+        bc?.postMessage({ type: "match", match: m, fromId: opts.playerId });
+        return;
+      }
 
-    yLobby.observe(emit);
-    yMatches.observe(() => {
-      emit();
-      const me = yLobby.get(opts.playerId);
-      const m = me?.matchId ? yMatches.get(me.matchId) : null;
-      if (m) maybeAdvance(m);
-    });
+      if (data.type === "match" && !match) {
+        role = role ?? "guest";
+        setMatch(data.match);
+        return;
+      }
 
-    opts.callbacks.onView({
-      status: "connecting",
-      message: "LINKING TO LIVE ROOM…",
-      match: null,
-      queueSize: 0,
-    });
+      if (data.type === "state" && match) {
+        setMatch(data.match);
+        return;
+      }
 
-    // Pairing loop
-    const pairTimer = window.setInterval(() => {
-      tryPair();
-      emit();
-    }, 800);
+      if (data.type === "pick" && role === "host") {
+        onRemotePick(data.playerId, data.choice);
+      }
+    };
+  } catch {
+    bc = null;
+  }
 
-    // initial pair attempt
-    window.setTimeout(() => {
-      tryPair();
-      emit();
-    }, 400);
+  // --- PeerJS path (cross-browser) ---
+  try {
+    const PeerCtor = (await import("peerjs")).default;
 
-    const destroy = () => {
-      destroyed = true;
-      window.clearInterval(pairTimer);
+    const tryHostSeat = (seatIndex: number): Promise<"host" | "taken"> =>
+      new Promise((resolve) => {
+        const id = `${SEAT_PREFIX}${seatIndex}`;
+        const p = new PeerCtor(id, { debug: 0 });
+        let settled = false;
+        const done = (r: "host" | "taken") => {
+          if (settled) return;
+          settled = true;
+          resolve(r);
+        };
+        p.on("open", () => {
+          peer = p;
+          role = "host";
+          done("host");
+        });
+        p.on("error", (err) => {
+          const t = (err as { type?: string }).type;
+          if (t === "unavailable-id") {
+            try {
+              p.destroy();
+            } catch {
+              /* ignore */
+            }
+            done("taken");
+          }
+        });
+        window.setTimeout(() => {
+          if (!settled) {
+            try {
+              p.destroy();
+            } catch {
+              /* ignore */
+            }
+            done("taken");
+          }
+        }, 4000);
+      });
+
+    const connectAsGuest = (seatIndex: number): Promise<boolean> =>
+      new Promise((resolve) => {
+        const hostId = `${SEAT_PREFIX}${seatIndex}`;
+        const p = new PeerCtor({ debug: 0 });
+        peer = p;
+        p.on("open", () => {
+          const c = p.connect(hostId, { reliable: true });
+          let ok = false;
+          c.on("open", () => {
+            ok = true;
+            role = "guest";
+            wireConn(c, false);
+            resolve(true);
+          });
+          c.on("error", () => resolve(false));
+          window.setTimeout(() => {
+            if (!ok) resolve(false);
+          }, 5000);
+        });
+        p.on("error", () => resolve(false));
+      });
+
+    let linked = false;
+
+    // 1) Prefer joining an existing host (avoids two lonely hosts)
+    for (let i = 0; i < SEAT_COUNT && !linked && !destroyed; i++) {
+      emit("connecting", `LOOKING FOR HOST ${i + 1}/${SEAT_COUNT}…`, 0);
+      const joined = await connectAsGuest(i);
+      if (joined) {
+        linked = true;
+        emit("queued", "LINKED · STARTING MATCH…", 2);
+        break;
+      }
       try {
-        const me = yLobby.get(opts.playerId);
-        if (me && !me.matchId) yLobby.delete(opts.playerId);
-        provider?.destroy?.();
-        doc.destroy();
+        peer?.destroy();
       } catch {
         /* ignore */
       }
-    };
+      peer = null;
+    }
 
-    // store pairTimer cleanup on handle via closure
-    return {
-      playerId: opts.playerId,
-      isPractice: false,
-      destroy,
-      setPick: (choice: RpsChoice) => {
-        const me = yLobby.get(opts.playerId);
-        const matchId = me?.matchId;
-        if (!matchId) return;
-        const match = yMatches.get(matchId);
-        if (!match) return;
-        const next = applyPick(match, opts.playerId, choice);
-        yMatches.set(matchId, next);
-        maybeAdvance(next);
-      },
-    };
+    // 2) No host found — claim a seat and wait
+    for (let i = 0; i < SEAT_COUNT && !linked && !destroyed; i++) {
+      emit("connecting", `CLAIMING SEAT ${i + 1}/${SEAT_COUNT}…`, 0);
+      const result = await tryHostSeat(i);
+      if (destroyed) break;
+
+      if (result === "host" && peer) {
+        role = "host";
+        emit("queued", "WAITING FOR OPPONENT…", 1);
+        bc?.postMessage({
+          type: "hello",
+          fromId: opts.playerId,
+          seat: mySeat,
+          entrySats: opts.entrySats,
+          hostWaiting: true,
+        });
+
+        peer.on("connection", (c: unknown) => {
+          if (match) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (c as any).close();
+            return;
+          }
+          wireConn(c, true);
+        });
+        linked = true;
+        break;
+      }
+    }
+
+    // BroadcastChannel guest: if someone is host in another tab
+    if (!linked && bc) {
+      role = "guest";
+      emit("queued", "WAITING FOR OPPONENT… (LOCAL BUS)", 1);
+      bc.postMessage({
+        type: "hello",
+        fromId: opts.playerId,
+        seat: mySeat,
+        entrySats: opts.entrySats,
+        wantMatch: true,
+      });
+      // Host BC handler will post match
+      linked = true;
+    }
+
+    if (!linked) {
+      emit(
+        "error",
+        "COULD NOT OPEN LIVE LINK — TRY PRACTICE OR SAME WIFI",
+        0,
+      );
+    } else if (role === "host") {
+      emit("queued", "WAITING FOR OPPONENT TO INSERT COIN…", 1);
+    }
   } catch {
-    opts.callbacks.onView({
-      status: "error",
-      message: "COULD NOT OPEN LIVE ROOM — CHECK NETWORK / WEBRTC",
-      match: null,
-      queueSize: 0,
-    });
-    return {
-      playerId: opts.playerId,
-      isPractice: false,
-      destroy: () => undefined,
-      setPick: () => undefined,
-    };
+    emit("error", "LIVE LINK FAILED — USE PRACTICE VS CHIP-CPU", 0);
   }
+
+  return {
+    playerId: opts.playerId,
+    isPractice: false,
+    destroy,
+    setPick: (choice: RpsChoice) => {
+      if (!match) return;
+      if (role === "host") {
+        match = applyPick(match, opts.playerId, choice);
+        setMatch(match);
+      } else {
+        // optimistic local apply when state echoes; still send pick
+        const msg: WireMsg = {
+          type: "pick",
+          playerId: opts.playerId,
+          choice,
+        };
+        try {
+          conn?.send(msg);
+        } catch {
+          /* ignore */
+        }
+        try {
+          bc?.postMessage({ ...msg, fromId: opts.playerId });
+        } catch {
+          /* ignore */
+        }
+        // apply locally so UI locks pick immediately
+        match = applyPick(match, opts.playerId, choice);
+        emit(
+          match.phase === "finished" ? "finished" : "matched",
+          match.phase === "reveal" ? "ROUND RESULT" : `ROUND ${match.round} · LOCKED`,
+          2,
+        );
+      }
+    },
+  };
 }
 
 function joinPractice(opts: {
@@ -268,7 +467,6 @@ function joinPractice(opts: {
     },
     opts.entrySats,
   );
-  // practice pot is entry only (no second human)
   match.potSats = opts.entrySats;
   let destroyed = false;
   let winClaimed = false;
