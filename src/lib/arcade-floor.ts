@@ -19,7 +19,7 @@ export type FloorSlot = {
 /** Fixed floor map for the forever roster — expand here when cabinets arrive */
 export const FLOOR_SLOTS: FloorSlot[] = [
   { gameId: "coin-drop", col: 0, row: 0 },
-  { gameId: "sat-hunter", col: 1, row: 0 },
+  { gameId: "sole-dodgeball", col: 1, row: 0 },
   { gameId: "pixel-racer", col: 2, row: 0 },
   { gameId: "rocket-run", col: 3, row: 0 },
   { gameId: "crazy-wheel", col: 0, row: 1 },

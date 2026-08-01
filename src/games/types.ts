@@ -32,6 +32,11 @@ export interface GameMeta {
   players?: 1 | 2;
   /** Winner pot = entry × players when both paid (v0 mock). */
   potSats?: Sats;
+  /**
+   * External play portal (e.g. $SOLE Dodgeball on sole site).
+   * When set, cabinet links out instead of /play/[id].
+   */
+  externalUrl?: string;
 }
 
 export interface GameSession {

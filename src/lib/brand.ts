@@ -178,11 +178,11 @@ export const officialRoster = [
     blurb: "Drop the coin. Land in a high multiplier slot!",
   },
   {
-    id: "sat-hunter",
-    title: "Sat Hunter",
-    accent: "#00DE76",
-    glyph: "🎯",
-    blurb: "Lock the reticle. Hunt the sats",
+    id: "sole-dodgeball",
+    title: "SOLE Dodgeball",
+    accent: "#EC641D",
+    glyph: "🏐",
+    blurb: "$SOLE e-sports · 1v1 live · Arch Support",
   },
   {
     id: "pixel-racer",

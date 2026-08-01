@@ -72,6 +72,21 @@ export function PixelCabinet({ game, selected, onSelect }: Props) {
   );
 
   if (playable) {
+    if (game.externalUrl) {
+      return (
+        <a
+          href={game.externalUrl}
+          target="_blank"
+          rel="noreferrer"
+          className={`${className} cursor-pointer`}
+          style={{ ["--cab-accent" as string]: accent }}
+          aria-label={`${game.title} — play on $SOLE`}
+          onClick={onSelect}
+        >
+          {body}
+        </a>
+      );
+    }
     return (
       <Link
         href={`/play/${game.id}`}

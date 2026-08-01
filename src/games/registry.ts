@@ -97,7 +97,31 @@ export const gameModules: GameModule[] = [
   crazyWheel,
 ];
 
-const playableIds = new Set(gameModules.map((g) => g.meta.id));
+/** Cross-title cabinet — plays on $SOLE e-sports portal */
+export const externalCabinets: GameMeta[] = [
+  {
+    id: "sole-dodgeball",
+    title: "SOLE Dodgeball",
+    tagline: "$SOLE e-sports · 1v1 live · Arch Support",
+    description:
+      "Live 1v1 dodgeball from $SOLE. Arch cream & orange pixel court. Portal to the Sole e-sports arena — more modes (2v2–FFA) coming.",
+    costSats: 500,
+    avgSessionSec: 180,
+    category: "multiplayer",
+    status: "playable",
+    accent: "#EC641D",
+    glyph: "🏐",
+    controls: ["WASD", "Throw"],
+    highScoreLabel: "Wins",
+    players: 2,
+    externalUrl: "https://bryanxbt.github.io/sole/esports/dodgeball/",
+  },
+];
+
+const playableIds = new Set([
+  ...gameModules.map((g) => g.meta.id),
+  ...externalCabinets.map((g) => g.id),
+]);
 
 /** Rest of the forever roster — coming soon cabinets */
 export const comingSoonMeta: GameMeta[] = officialRoster
@@ -122,5 +146,9 @@ export function getGame(id: string): GameModule | undefined {
 }
 
 export function listLobbyGames(): GameMeta[] {
-  return [...gameModules.map((g) => g.meta), ...comingSoonMeta];
+  return [
+    ...gameModules.map((g) => g.meta),
+    ...externalCabinets,
+    ...comingSoonMeta,
+  ];
 }
