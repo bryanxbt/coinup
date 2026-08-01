@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BrandNav } from "@/components/brand/BrandNav";
 import { BRAND } from "@/lib/brand";
 import { BRAND_BOOK } from "@/lib/brand-book/toc";
+import { withBase } from "@/lib/paths";
 
 export const metadata = {
   title: `${BRAND_BOOK.title} — ${BRAND.fullName}`,
@@ -20,7 +21,7 @@ export default function BrandLayout({
         <div className="sticky top-0 max-h-screen overflow-y-auto py-4 pr-2">
           <Link href="/brand" className="mb-4 flex items-center gap-2 px-2">
             <Image
-              src={BRAND.assets.chipHero}
+              src={withBase(BRAND.assets.chipHero)}
               alt="Chip"
               width={32}
               height={32}

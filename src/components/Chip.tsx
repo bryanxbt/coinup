@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { BRAND, chipExpressions, type ChipExpression } from "@/lib/brand";
+import { withBase } from "@/lib/paths";
 
 /** Chip — CoinUp Arcade Manager mascot (see docs/BRAND.md) */
 export const CHIP = {
@@ -34,7 +35,7 @@ export function ChipPortrait({
     <div className={`relative inline-flex flex-col items-center ${className}`}>
       <div className="relative" style={{ width: size, height: size }}>
         <Image
-          src={CHIP.image}
+          src={withBase(CHIP.image)}
           alt={`${CHIP.fullTitle} — CoinUp mascot`}
           width={size}
           height={size}

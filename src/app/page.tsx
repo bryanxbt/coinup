@@ -4,6 +4,7 @@ import { GameCard } from "@/components/GameCard";
 import { listLobbyGames } from "@/games/registry";
 import Link from "next/link";
 import { BRAND, chipExpressions, colors, officialRoster } from "@/lib/brand";
+import { withBase } from "@/lib/paths";
 
 export default function LobbyPage() {
   const games = listLobbyGames();
@@ -76,7 +77,7 @@ export default function LobbyPage() {
           <div className="grid gap-0 md:grid-cols-2">
             <div className="relative min-h-[220px] border-b border-white/10 md:border-b-0 md:border-r">
               <Image
-                src={BRAND.assets.brandBookV1}
+                src={withBase(BRAND.assets.brandBookV1)}
                 alt="CoinUp Brand Book v1.0"
                 fill
                 className="object-cover object-top"

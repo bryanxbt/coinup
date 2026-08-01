@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { BRAND, colors, palettePrimary } from "@/lib/brand";
 import { BRAND_BOOK, chapters } from "@/lib/brand-book/toc";
+import { withBase } from "@/lib/paths";
 
 export default function BrandIndexPage() {
   return (
@@ -28,13 +29,13 @@ export default function BrandIndexPage() {
           Visual Brand Book v{BRAND.version}
         </h2>
         <a
-          href={BRAND.assets.brandBookV1}
+          href={withBase(BRAND.assets.brandBookV1)}
           target="_blank"
           rel="noreferrer"
           className="block overflow-hidden rounded-xl border border-white/10 bg-black"
         >
           <Image
-            src={BRAND.assets.brandBookV1}
+            src={withBase(BRAND.assets.brandBookV1)}
             alt="CoinUp Arcade Brand Book v1.0 full board"
             width={1024}
             height={1536}
