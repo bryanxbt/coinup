@@ -25,7 +25,7 @@ export const FLOOR_SLOTS: FloorSlot[] = [
   { gameId: "orange-mines", col: 0, row: 1 },
   { gameId: "memory-matrix", col: 1, row: 1 },
   { gameId: "block-stacker", col: 2, row: 1 },
-  { gameId: "lightning-reflex", col: 3, row: 1 },
+  { gameId: "rock-paper-scissors", col: 3, row: 1 },
 ];
 
 export type PlacedCabinet = FloorSlot & {

@@ -28,6 +28,10 @@ export interface GameMeta {
   glyph: string;
   controls: string[];
   highScoreLabel?: string;
+  /** 1 = solo cabinet, 2 = needs a live opponent */
+  players?: 1 | 2;
+  /** Winner pot = entry × players when both paid (v0 mock). */
+  potSats?: Sats;
 }
 
 export interface GameSession {

@@ -26,6 +26,9 @@ export function createArchPaymentClient(
     async submitScore() {
       throw new Error("Arch payment client not implemented yet — use mockPaymentClient.");
     },
+    async claimReward() {
+      throw new Error("Arch payment client not implemented yet — use mockPaymentClient.");
+    },
     async withdraw() {
       throw new Error("Arch payment client not implemented yet — use mockPaymentClient.");
     },

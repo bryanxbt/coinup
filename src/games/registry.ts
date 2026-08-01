@@ -1,11 +1,12 @@
 import type { GameModule, GameMeta } from "./types";
 import { CoinCatch } from "./coin-catch/CoinCatch";
 import { StackSats } from "./stack-sats/StackSats";
+import { RockPaperScissors } from "./rock-paper-scissors/RockPaperScissors";
 import { officialRoster } from "@/lib/brand";
 
 /**
  * Playable prototypes mapped onto official brand roster names.
- * See docs/BRAND.md — do not invent parallel titles.
+ * See docs/brand-book — do not invent parallel titles.
  */
 const coinDrop: GameModule = {
   meta: {
@@ -22,6 +23,7 @@ const coinDrop: GameModule = {
     glyph: "🪙",
     controls: ["← →", "Drag", "Esc"],
     highScoreLabel: "Coins caught",
+    players: 1,
   },
   Play: CoinCatch,
 };
@@ -30,7 +32,7 @@ const blockStacker: GameModule = {
   meta: {
     id: "block-stacker",
     title: "Block Stacker",
-    tagline: "Stack clean. Don’t topple",
+    tagline: "Stack clean. Don't topple",
     description:
       "Time the drop. Overhang gets sliced. How high can you stack before it topples?",
     costSats: 750,
@@ -41,11 +43,37 @@ const blockStacker: GameModule = {
     glyph: "🧱",
     controls: ["Space", "Click", "Esc"],
     highScoreLabel: "Floors",
+    players: 1,
   },
   Play: StackSats,
 };
 
-export const gameModules: GameModule[] = [coinDrop, blockStacker];
+const rockPaperScissors: GameModule = {
+  meta: {
+    id: "rock-paper-scissors",
+    title: "Rock Paper Scissors",
+    tagline: "Best of 3 live duel — winner takes the pot",
+    description:
+      "Two players insert coin. Best of three rock-paper-scissors. Winner takes the full pot in sats. First live multiplayer cabinet on the floor.",
+    costSats: 1000,
+    potSats: 2000,
+    avgSessionSec: 120,
+    category: "multiplayer",
+    status: "playable",
+    accent: "#FFD11A",
+    glyph: "✊",
+    controls: ["Pick", "Best of 3"],
+    highScoreLabel: "Duels won",
+    players: 2,
+  },
+  Play: RockPaperScissors,
+};
+
+export const gameModules: GameModule[] = [
+  coinDrop,
+  blockStacker,
+  rockPaperScissors,
+];
 
 const playableIds = new Set(gameModules.map((g) => g.meta.id));
 
@@ -64,6 +92,7 @@ export const comingSoonMeta: GameMeta[] = officialRoster
     accent: g.accent,
     glyph: g.glyph,
     controls: ["TBD"],
+    players: 1 as const,
   }));
 
 export function getGame(id: string): GameModule | undefined {

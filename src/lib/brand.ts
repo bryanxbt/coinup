@@ -220,11 +220,11 @@ export const officialRoster = [
     blurb: "Stack clean. Don't topple",
   },
   {
-    id: "lightning-reflex",
-    title: "Lightning Reflex",
+    id: "rock-paper-scissors",
+    title: "Rock Paper Scissors",
     accent: "#FFD11A",
-    glyph: "⚡",
-    blurb: "React on the bolt",
+    glyph: "✊",
+    blurb: "Best of 3 live duel — winner takes the pot",
   },
 ] as const;
 

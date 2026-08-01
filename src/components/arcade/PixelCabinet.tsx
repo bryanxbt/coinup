@@ -62,6 +62,9 @@ export function PixelCabinet({ game, selected, onSelect }: Props) {
         <p className="cabinet-cost">
           {playable ? formatSats(game.costSats).toUpperCase() : "COMING SOON"}
         </p>
+        {playable && game.players === 2 && (
+          <p className="cabinet-mp">2P LIVE</p>
+        )}
       </div>
 
       {!playable && <div className="cabinet-tape">WIP</div>}

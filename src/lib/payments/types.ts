@@ -52,5 +52,7 @@ export interface PaymentClient {
   deposit(req: DepositRequest): Promise<ArcadeBalance>;
   insertCoin(req: InsertCoinRequest): Promise<InsertCoinResult>;
   submitScore(sub: ScoreSubmission): Promise<{ accepted: boolean; txRef?: string }>;
+  /** Credit winner pot (mock) / claim on-chain later */
+  claimReward(req: RewardClaim): Promise<ArcadeBalance>;
   withdraw(playerId: string, amountSats: Sats): Promise<ArcadeBalance>;
 }

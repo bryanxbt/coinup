@@ -6,6 +6,8 @@
  * firewalls / strict browsers may block WebRTC peers.
  */
 
+import { getGuestName } from "@/lib/player";
+
 export type FloorPeer = {
   id: number;
   name: string;
@@ -25,18 +27,6 @@ export type PresenceSnapshot = {
 
 const ROOM = "coinup-arcade-floor-v1";
 
-function guestName(): string {
-  if (typeof window === "undefined") return "GUEST";
-  const key = "coinup.guestName.v1";
-  let name = window.localStorage.getItem(key);
-  if (!name) {
-    const n = Math.floor(1000 + Math.random() * 9000);
-    name = `PLAYER-${n}`;
-    window.localStorage.setItem(key, name);
-  }
-  return name;
-}
-
 export type PresenceHandle = {
   destroy: () => void;
 };
@@ -52,7 +42,7 @@ export async function joinArcadePresence(
   const { WebrtcProvider } = await import("y-webrtc");
 
   const doc = new Y.Doc();
-  const name = guestName();
+  const name = getGuestName();
   const joinedAt = Date.now();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -85,7 +75,6 @@ export async function joinArcadePresence(
   };
 
   try {
-    // Public signaling by default — room name scopes CoinUp visitors
     provider = new WebrtcProvider(ROOM, doc);
 
     provider.awareness.setLocalStateField("user", {

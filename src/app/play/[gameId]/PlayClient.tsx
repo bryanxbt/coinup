@@ -75,12 +75,26 @@ export function PlayClient({ meta }: { meta: GameMeta }) {
           style={{ color: meta.accent }}
         >
           {formatSats(meta.costSats).toUpperCase()} / PLAY
+          {meta.players === 2 && meta.potSats
+            ? ` · POT ${formatSats(meta.potSats).toUpperCase()}`
+            : ""}
         </p>
+        {meta.players === 2 && (
+          <p className="mt-2 font-pixel text-[8px] text-[var(--neon-magenta)]">
+            2-PLAYER LIVE · BOTH MUST PAY
+          </p>
+        )}
       </div>
 
       {phase === "ready" && (
         <div className="pixel-panel flex w-full max-w-sm flex-col items-center gap-5 border-[var(--neon-amber)] px-8 py-10">
           <div className="text-5xl">{meta.glyph}</div>
+          {meta.players === 2 && (
+            <p className="text-center font-pixel text-[8px] leading-relaxed text-[#8a8a9a]">
+              INSERT COIN TO ENTER THE LIVE ROOM. WHEN A SECOND PLAYER PAYS, BEST
+              OF 3 BEGINS. WINNER TAKES THE POT.
+            </p>
+          )}
           <button type="button" onClick={insertCoin} className="pixel-btn w-full">
             INSERT {formatSats(meta.costSats).toUpperCase()}
           </button>

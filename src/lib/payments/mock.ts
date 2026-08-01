@@ -76,6 +76,12 @@ export const mockPaymentClient: PaymentClient = {
     return { accepted: true, txRef: `mock_score_${Date.now()}` };
   },
 
+  async claimReward(req) {
+    const bal = readBalance();
+    bal.availableSats += req.amountSats;
+    return writeBalance(bal);
+  },
+
   async withdraw(playerId, amountSats) {
     void playerId;
     const bal = readBalance();

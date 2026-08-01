@@ -753,6 +753,13 @@ body::after {
   color: var(--cab-accent, #fcc76e);
 }
 
+.cabinet-mp {
+  margin: 3px 0 0;
+  font-family: var(--font-pixel), monospace;
+  font-size: 6px;
+  color: var(--neon-magenta);
+}
+
 .cabinet-tape {
   position: absolute;
   top: 38%;
