@@ -22,7 +22,7 @@ export const FLOOR_SLOTS: FloorSlot[] = [
   { gameId: "sat-hunter", col: 1, row: 0 },
   { gameId: "pixel-racer", col: 2, row: 0 },
   { gameId: "rocket-run", col: 3, row: 0 },
-  { gameId: "orange-mines", col: 0, row: 1 },
+  { gameId: "crazy-wheel", col: 0, row: 1 },
   { gameId: "memory-matrix", col: 1, row: 1 },
   { gameId: "block-stacker", col: 2, row: 1 },
   { gameId: "rock-paper-scissors", col: 3, row: 1 },

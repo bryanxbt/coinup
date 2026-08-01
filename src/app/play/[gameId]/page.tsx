@@ -7,6 +7,7 @@ export function generateStaticParams() {
     { gameId: "coin-drop" },
     { gameId: "block-stacker" },
     { gameId: "rock-paper-scissors" },
+    { gameId: "crazy-wheel" },
   ];
 }
 

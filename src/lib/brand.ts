@@ -199,11 +199,11 @@ export const officialRoster = [
     blurb: "Boost vertical — don't stall",
   },
   {
-    id: "orange-mines",
-    title: "Orange Mines",
+    id: "crazy-wheel",
+    title: "Crazy Wheel",
     accent: "#FFB347",
-    glyph: "💣",
-    blurb: "Clear the grid. Mind the mines",
+    glyph: "🎡",
+    blurb: "Pick a color. Spin the arc. Hit your mult — take the pot",
   },
   {
     id: "memory-matrix",

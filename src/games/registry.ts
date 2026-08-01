@@ -2,6 +2,7 @@ import type { GameModule, GameMeta } from "./types";
 import { CoinCatch } from "./coin-catch/CoinCatch";
 import { StackSats } from "./stack-sats/StackSats";
 import { RockPaperScissors } from "./rock-paper-scissors/RockPaperScissors";
+import { CrazyWheel } from "./crazy-wheel/CrazyWheel";
 import { officialRoster } from "@/lib/brand";
 
 /**
@@ -69,10 +70,31 @@ const rockPaperScissors: GameModule = {
   Play: RockPaperScissors,
 };
 
+const crazyWheel: GameModule = {
+  meta: {
+    id: "crazy-wheel",
+    title: "Crazy Wheel",
+    tagline: "Pick a color. Spin the arc. Hit your mult",
+    description:
+      "Insert sats as your stake. Pick a colored wedge. Countdown, spin the crazy arc — land on your color to cash the multiplier. Miss and the house keeps the stake.",
+    costSats: 1000,
+    avgSessionSec: 45,
+    category: "classic",
+    status: "playable",
+    accent: "#FFB347",
+    glyph: "🎡",
+    controls: ["Pick color", "Spin"],
+    highScoreLabel: "Biggest hit",
+    players: 1,
+  },
+  Play: CrazyWheel,
+};
+
 export const gameModules: GameModule[] = [
   coinDrop,
   blockStacker,
   rockPaperScissors,
+  crazyWheel,
 ];
 
 const playableIds = new Set(gameModules.map((g) => g.meta.id));

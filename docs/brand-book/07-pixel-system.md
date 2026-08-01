@@ -67,7 +67,7 @@ All pixel assets must index into this table (names stable; hex locked at v1).
 | 13 | Gold | `#EAB308` | Coin / trim |
 | 14 | Gold Hot | `#FDE047` | Coin highlight |
 | 15 | Amber | `#F59E0B` | Warm UI pixel |
-| 16 | Orange | `#F97316` | Coin Drop / mines |
+| 16 | Orange | `#F97316` | Coin Drop / Crazy Wheel |
 | 17 | Hot Orange | `#FB923C` | Accent |
 | 18 | Magenta Deep | `#9D174D` | Shadow pink |
 | 19 | Magenta | `#EC4899` | Rocket / forever |
