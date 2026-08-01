@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
+import { TypeText } from "@/components/arcade/TypeText";
 import { getGame } from "@/games/registry";
 import type { GameMeta, GameSession } from "@/games/types";
 import { formatSats, mockPaymentClient } from "@/lib/payments";
@@ -32,7 +33,6 @@ export function PlayClient({ meta }: { meta: GameMeta }) {
       });
       setPhase("playing");
       setLastScore(null);
-      // notify shell balance — storage event for other tabs; force refresh via custom event
       window.dispatchEvent(new Event("coinup:balance"));
     } catch (e) {
       setPhase("error");
@@ -42,10 +42,12 @@ export function PlayClient({ meta }: { meta: GameMeta }) {
 
   if (!module) {
     return (
-      <main className="px-4 py-16 text-center">
-        <p className="text-zinc-400">Game not found.</p>
-        <Link href="/" className="mt-4 inline-block text-cyan-300 underline">
-          Lobby
+      <main className="arcade-grid px-4 py-16 text-center">
+        <p className="font-pixel text-[10px] text-[var(--orange)]">
+          CABINET NOT FOUND
+        </p>
+        <Link href="/" className="pixel-link mt-4 inline-block font-pixel text-[9px]">
+          ← LOBBY
         </Link>
       </main>
     );
@@ -54,70 +56,82 @@ export function PlayClient({ meta }: { meta: GameMeta }) {
   const Play = module.Play;
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col items-center px-4 py-10">
+    <main className="arcade-grid mx-auto flex max-w-3xl flex-col items-center px-4 py-10">
       <div className="mb-8 w-full text-center">
-        <p className="font-mono text-xs uppercase tracking-[0.3em] text-zinc-500">
-          Cabinet
+        <p className="font-pixel text-[8px] text-[#5c5c6b]">CABINET</p>
+        <h1 className="mt-2 font-pixel text-sm text-white sm:text-base">
+          {meta.title.toUpperCase()}
+        </h1>
+        <p className="mx-auto mt-3 max-w-md font-pixel text-[8px] leading-relaxed text-[#8a8a9a]">
+          <TypeText
+            text={meta.description.toUpperCase()}
+            speed={12}
+            className="font-pixel text-[8px] leading-relaxed text-[#8a8a9a]"
+            holdCursor={false}
+          />
         </p>
-        <h1 className="mt-1 font-mono text-3xl font-bold text-white">{meta.title}</h1>
-        <p className="mt-2 text-sm text-zinc-400">{meta.description}</p>
-        <p className="mt-3 font-mono text-sm" style={{ color: meta.accent }}>
-          {formatSats(meta.costSats)} per play
+        <p
+          className="mt-4 font-pixel text-[10px]"
+          style={{ color: meta.accent }}
+        >
+          {formatSats(meta.costSats).toUpperCase()} / PLAY
         </p>
       </div>
 
       {phase === "ready" && (
-        <div className="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-zinc-950/80 px-10 py-12">
-          <div className="text-6xl">{meta.glyph}</div>
-          <button
-            type="button"
-            onClick={insertCoin}
-            className="rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-8 py-3 font-mono text-sm font-bold text-black shadow-[0_0_30px_rgba(251,191,36,0.4)] hover:brightness-110"
-          >
-            INSERT {formatSats(meta.costSats)}
+        <div className="pixel-panel flex w-full max-w-sm flex-col items-center gap-5 border-[var(--neon-amber)] px-8 py-10">
+          <div className="text-5xl">{meta.glyph}</div>
+          <button type="button" onClick={insertCoin} className="pixel-btn w-full">
+            INSERT {formatSats(meta.costSats).toUpperCase()}
           </button>
-          <Link href="/" className="font-mono text-xs text-zinc-500 hover:text-zinc-300">
-            ← lobby
+          <Link href="/" className="font-pixel text-[8px] text-[#5c5c6b] hover:text-[var(--crt-green)]">
+            ← LOBBY
           </Link>
           {lastScore !== null && (
-            <p className="font-mono text-amber-300">Last run: {lastScore}</p>
+            <p className="font-pixel text-[10px] text-[var(--neon-amber)]">
+              LAST RUN: {lastScore}
+            </p>
           )}
         </div>
       )}
 
       {phase === "error" && (
-        <div className="flex flex-col items-center gap-4 rounded-2xl border border-red-500/30 bg-red-950/30 px-10 py-12 text-center">
-          <p className="font-mono text-red-300">{error}</p>
+        <div className="pixel-panel flex w-full max-w-sm flex-col items-center gap-4 border-[var(--orange)] px-8 py-10 text-center">
+          <p className="font-pixel text-[10px] leading-relaxed text-[var(--orange)]">
+            {error?.toUpperCase()}
+          </p>
           <button
             type="button"
             onClick={() => setPhase("ready")}
-            className="rounded border border-white/20 px-4 py-2 font-mono text-sm text-white hover:bg-white/5"
+            className="pixel-btn pixel-btn--ghost"
           >
-            Try again
+            TRY AGAIN
           </button>
-          <Link href="/" className="font-mono text-xs text-amber-300 hover:underline">
-            Add credits in lobby → INSERT COIN
+          <Link href="/" className="font-pixel text-[8px] text-[var(--neon-amber)]">
+            INSERT COIN IN LOBBY →
           </Link>
         </div>
       )}
 
       {phase === "playing" && session && (
-        <Play
-          session={session}
-          onScore={async (payload) => {
-            setLastScore(payload.score);
-            await mockPaymentClient.submitScore({
-              gameId: payload.gameId,
-              sessionId: payload.sessionId,
-              playerId: getPlayerId(),
-              score: payload.score,
-            });
-          }}
-          onExit={() => {
-            setSession(null);
-            setPhase("ready");
-          }}
-        />
+        <div className="pixel-panel border-[var(--varsity-blue)] p-4">
+          <Play
+            session={session}
+            onScore={async (payload) => {
+              setLastScore(payload.score);
+              await mockPaymentClient.submitScore({
+                gameId: payload.gameId,
+                sessionId: payload.sessionId,
+                playerId: getPlayerId(),
+                score: payload.score,
+              });
+            }}
+            onExit={() => {
+              setSession(null);
+              setPhase("ready");
+            }}
+          />
+        </div>
       )}
     </main>
   );

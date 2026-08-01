@@ -56,11 +56,9 @@ export function ChipPortrait({
       </div>
       {showBadge && (
         <div className="mt-3 text-center">
-          <p className="font-mono text-lg font-bold tracking-tight text-white">
-            {CHIP.name}
-          </p>
-          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-amber-400/90">
-            {CHIP.title}
+          <p className="font-pixel text-xs text-white">{CHIP.name.toUpperCase()}</p>
+          <p className="font-pixel text-[8px] text-[var(--neon-amber)]">
+            {CHIP.title.toUpperCase()}
           </p>
         </div>
       )}
@@ -79,11 +77,11 @@ export function ChipBubble({
 }) {
   return (
     <div
-      className={`relative max-w-sm rounded-2xl border border-cyan-400/30 bg-zinc-950/90 px-4 py-3 font-mono text-sm leading-relaxed text-cyan-100 shadow-[0_0_30px_rgba(34,211,238,0.12)] ${className}`}
+      className={`pixel-panel relative max-w-sm border-[var(--neon-cyan)] px-4 py-3 font-pixel text-[9px] leading-relaxed text-[var(--neon-cyan)] ${className}`}
     >
-      <span className="mb-1 block text-[10px] uppercase tracking-[0.25em] text-zinc-500">
-        {CHIP.name}
-        {expression ? ` · ${chipExpressions[expression].label}` : " says"}
+      <span className="mb-2 block text-[8px] text-[#5c5c6b]">
+        {CHIP.name.toUpperCase()}
+        {expression ? ` · ${chipExpressions[expression].label}` : ""}
       </span>
       {children}
     </div>

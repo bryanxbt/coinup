@@ -29,10 +29,8 @@ export default function BrandLayout({
               className="pixelated"
             />
             <div>
-              <p className="font-mono text-xs font-bold text-white">
-                BRAND BOOK
-              </p>
-              <p className="font-mono text-[9px] uppercase tracking-wider text-zinc-500">
+              <p className="font-pixel text-[9px] text-white">BRAND BOOK</p>
+              <p className="font-pixel text-[8px] text-[#5c5c6b]">
                 v{BRAND.version}
               </p>
             </div>
@@ -40,9 +38,9 @@ export default function BrandLayout({
           <BrandNav />
           <Link
             href="/"
-            className="mt-6 block px-2 font-mono text-[10px] text-zinc-600 hover:text-zinc-400"
+            className="mt-6 block px-2 font-pixel text-[8px] text-[#5c5c6b] hover:text-[var(--crt-green)]"
           >
-            ← Arcade lobby
+            ← LOBBY
           </Link>
         </div>
       </aside>

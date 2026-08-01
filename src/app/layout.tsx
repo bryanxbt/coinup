@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Press_Start_2P } from "next/font/google";
 import { ArcadeShell } from "@/components/ArcadeShell";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const pressStart = Press_Start_2P({
+  weight: "400",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-pixel",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -29,11 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="flex min-h-full flex-col bg-background text-foreground">
+    <html lang="en" className={`${pressStart.variable} h-full`}>
+      <body className="flex min-h-full flex-col bg-background text-foreground font-pixel">
         <ArcadeShell>{children}</ArcadeShell>
       </body>
     </html>

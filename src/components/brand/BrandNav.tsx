@@ -11,13 +11,13 @@ export function BrandNav() {
     <nav className="flex flex-col gap-0.5">
       <Link
         href="/brand"
-        className={`rounded px-2 py-1.5 font-mono text-[11px] uppercase tracking-wider ${
+        className={`block border-2 px-2 py-1.5 font-pixel text-[8px] ${
           pathname === "/brand"
-            ? "bg-pink-500/20 text-pink-300"
-            : "text-zinc-500 hover:bg-white/5 hover:text-zinc-300"
+            ? "border-[var(--neon-magenta)] bg-[var(--neon-magenta)]/15 text-[var(--neon-magenta)]"
+            : "border-transparent text-[#5c5c6b] hover:border-[var(--steel)] hover:text-white"
         }`}
       >
-        Index
+        INDEX
       </Link>
       {chapters.map((ch) => {
         const href = `/brand/${ch.slug}`;
@@ -26,17 +26,15 @@ export function BrandNav() {
           <Link
             key={ch.slug}
             href={href}
-            className={`rounded px-2 py-1.5 font-mono text-[11px] leading-snug ${
+            className={`block border-2 px-2 py-1.5 font-pixel text-[8px] leading-snug ${
               active
-                ? "bg-pink-500/20 text-pink-300"
-                : "text-zinc-500 hover:bg-white/5 hover:text-zinc-300"
+                ? "border-[var(--neon-magenta)] bg-[var(--neon-magenta)]/15 text-[var(--neon-magenta)]"
+                : "border-transparent text-[#5c5c6b] hover:border-[var(--steel)] hover:text-white"
             }`}
           >
-            <span className="text-zinc-600">{ch.number}</span>{" "}
-            {ch.title}
-            {ch.flagship && (
-              <span className="ml-1 text-[9px] text-amber-400/80">★</span>
-            )}
+            <span className="text-[#3a3a44]">{ch.number}</span>{" "}
+            {ch.title.toUpperCase()}
+            {ch.flagship ? " ★" : ""}
           </Link>
         );
       })}
