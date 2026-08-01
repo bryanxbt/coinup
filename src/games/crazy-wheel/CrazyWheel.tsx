@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+/**
+ * Crazy Wheel — frontend cabinet shell branded for CoinUp.
+ * Layout mirrors the live product (arc, pot, chest, bet bar);
+ * spin/payout is a local mock until wired to real rails.
+ */
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { GamePlayProps } from "../types";
 import {
   pickWeightedIndex,
@@ -9,136 +15,176 @@ import {
   type WheelSegment,
 } from "./segments";
 import { formatSats, mockPaymentClient } from "@/lib/payments";
-import { getPlayerId } from "@/lib/player";
+import { getGuestName, getPlayerId } from "@/lib/player";
 
-const W = 340;
-const H = 280;
+const W = 420;
+const H = 300;
 const CX = W / 2;
-const CY = H - 36;
-const R_OUTER = 150;
-const R_INNER = 72;
+const CY = H - 28;
+const R_OUT = 168;
+const R_IN = 88;
 
-type Phase = "pick" | "countdown" | "spinning" | "result";
+type Phase = "lobby" | "countdown" | "spinning" | "result";
 
 export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
   const stake = session.creditsSpent;
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [phase, setPhase] = useState<Phase>("pick");
+  const spinRef = useRef<number | null>(null);
+  const [phase, setPhase] = useState<Phase>("lobby");
   const [selected, setSelected] = useState<string | null>(null);
+  const [betUnits, setBetUnits] = useState(1); // × stake slices for UI (display only on top of paid stake)
   const [countdown, setCountdown] = useState(3);
-  const [rotation, setRotation] = useState(0); // radians offset of wheel
+  const [rotation, setRotation] = useState(0);
   const [landed, setLanded] = useState<WheelSegment | null>(null);
   const [won, setWon] = useState(false);
   const [payout, setPayout] = useState(0);
-  const [status, setStatus] = useState("PICK A COLOR · THEN SPIN");
-  const spinRef = useRef<number | null>(null);
+  const [timerLeft, setTimerLeft] = useState(24);
 
-  const angles = segmentAngles(WHEEL_SEGMENTS.length);
+  const angles = useMemo(() => segmentAngles(WHEEL_SEGMENTS.length), []);
+  const guest = useMemo(() => getGuestName(), []);
+  const selectedSeg = WHEEL_SEGMENTS.find((s) => s.id === selected) ?? null;
+  const potPreview = selectedSeg ? stake * selectedSeg.mult * betUnits : stake;
+
+  // Attract timer (cosmetic, like production)
+  useEffect(() => {
+    if (phase !== "lobby") return;
+    const t = window.setInterval(() => {
+      setTimerLeft((n) => (n <= 0 ? 24 : n - 1));
+    }, 1000);
+    return () => window.clearInterval(t);
+  }, [phase]);
 
   const draw = useCallback(
-    (rot: number, highlightId: string | null) => {
+    (rot: number, highlightId: string | null, potText: string) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      ctx.fillStyle = "#0a0612";
+      // isometric-ish hex floor (brand void + purple tint)
+      const g = ctx.createLinearGradient(0, 0, W, H);
+      g.addColorStop(0, "#1a1030");
+      g.addColorStop(0.5, "#2a1848");
+      g.addColorStop(1, "#12101c");
+      ctx.fillStyle = g;
       ctx.fillRect(0, 0, W, H);
 
-      // hex floor vibe
-      ctx.strokeStyle = "rgba(139,92,246,0.15)";
+      // diamond grid
+      ctx.strokeStyle = "rgba(0,0,0,0.25)";
       ctx.lineWidth = 1;
-      for (let y = 0; y < H; y += 16) {
+      const step = 22;
+      for (let y = -H; y < H * 2; y += step) {
         ctx.beginPath();
         ctx.moveTo(0, y);
-        ctx.lineTo(W, y);
+        ctx.lineTo(W, y + W * 0.35);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y - W * 0.35);
         ctx.stroke();
       }
 
-      // wheel wedges (semicircle)
+      // cyan arc rail under segments
+      ctx.beginPath();
+      ctx.arc(CX, CY, R_OUT + 10, Math.PI, 0, false);
+      ctx.strokeStyle = "rgba(34, 211, 238, 0.55)";
+      ctx.lineWidth = 10;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(CX, CY, R_OUT + 10, Math.PI, 0, false);
+      ctx.strokeStyle = "rgba(34, 211, 238, 0.9)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // segments as rounded “cards” on the arc
       WHEEL_SEGMENTS.forEach((seg, i) => {
         const a = angles[i];
         const start = a.start + rot;
         const end = a.end + rot;
+        const mid = a.mid + rot;
+
         ctx.beginPath();
         ctx.moveTo(CX, CY);
-        ctx.arc(CX, CY, R_OUTER, -start, -end, true);
+        ctx.arc(CX, CY, R_OUT, -start, -end, true);
+        ctx.arc(CX, CY, R_IN, -end, -start, false);
         ctx.closePath();
         ctx.fillStyle = seg.color;
         ctx.fill();
-        ctx.strokeStyle = "#000";
+        ctx.strokeStyle = "rgba(0,0,0,0.45)";
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // inner cut for ring look
-        // labels along mid
-        const mid = a.mid + rot;
-        const lx = CX + Math.cos(-mid) * ((R_OUTER + R_INNER) / 2);
-        const ly = CY + Math.sin(-mid) * ((R_OUTER + R_INNER) / 2);
-        ctx.fillStyle = "#000";
-        ctx.font = "bold 11px monospace";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(seg.label, lx, ly);
-
         if (highlightId === seg.id) {
-          ctx.beginPath();
-          ctx.moveTo(CX, CY);
-          ctx.arc(CX, CY, R_OUTER + 4, -start, -end, true);
-          ctx.closePath();
           ctx.strokeStyle = "#fff";
           ctx.lineWidth = 3;
           ctx.stroke();
         }
+
+        // seat circle + mult label
+        const sx = CX + Math.cos(-mid) * ((R_OUT + R_IN) / 2);
+        const sy = CY + Math.sin(-mid) * ((R_OUT + R_IN) / 2);
+        ctx.beginPath();
+        ctx.arc(sx, sy, 16, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0,0,0,0.35)";
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,0.35)";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.fillStyle = "#111";
+        ctx.font = "bold 11px monospace";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(seg.label, sx, sy);
       });
 
-      // center well
-      ctx.beginPath();
-      ctx.arc(CX, CY, R_INNER, Math.PI, 0, true);
-      ctx.lineTo(CX + R_INNER, CY + 20);
-      ctx.lineTo(CX - R_INNER, CY + 20);
-      ctx.closePath();
-      ctx.fillStyle = "#14141a";
+      // center pot card
+      ctx.fillStyle = "rgba(15, 23, 20, 0.92)";
+      roundRect(ctx, CX - 70, CY - 70, 140, 44, 8);
       ctx.fill();
-      ctx.strokeStyle = "#2a2a33";
-      ctx.lineWidth = 3;
+      ctx.strokeStyle = "rgba(74, 222, 128, 0.5)";
+      ctx.lineWidth = 2;
+      roundRect(ctx, CX - 70, CY - 70, 140, 44, 8);
       ctx.stroke();
 
-      // treasure / pot
-      ctx.fillStyle = "#EAB308";
-      ctx.font = "28px serif";
+      ctx.fillStyle = "#4ade80";
+      ctx.font = "bold 16px monospace";
       ctx.textAlign = "center";
-      ctx.fillText("🎁", CX, CY - 28);
-      ctx.fillStyle = "#00de76";
-      ctx.font = "10px monospace";
-      const potLabel = selected
-        ? formatSats(
-            stake * (WHEEL_SEGMENTS.find((s) => s.id === selected)?.mult ?? 1),
-          )
-        : formatSats(stake);
-      ctx.fillText(potLabel.toUpperCase(), CX, CY - 4);
-      ctx.fillStyle = "#5c5c6b";
-      ctx.font = "8px monospace";
-      ctx.fillText("POT IF WIN", CX, CY + 12);
+      ctx.fillText(potText, CX, CY - 48);
 
-      // pointer at top center of arc
+      // chest
+      ctx.font = "36px serif";
+      ctx.fillText("🧰", CX + 78, CY - 42);
+
+      // green GO / spin well
       ctx.beginPath();
-      ctx.moveTo(CX, CY - R_OUTER - 8);
-      ctx.lineTo(CX - 10, CY - R_OUTER + 10);
-      ctx.lineTo(CX + 10, CY - R_OUTER + 10);
-      ctx.closePath();
-      ctx.fillStyle = "#22d3ee";
+      ctx.arc(CX, CY + 8, 36, 0, Math.PI * 2);
+      ctx.fillStyle = "#16a34a";
       ctx.fill();
-      ctx.strokeStyle = "#000";
+      ctx.strokeStyle = "#052e16";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.fillStyle = "#bbf7d0";
+      ctx.font = "bold 12px monospace";
+      ctx.fillText(phase === "spinning" ? "…" : "GO", CX, CY + 12);
+
+      // pointer
+      ctx.beginPath();
+      ctx.moveTo(CX, CY - R_OUT - 14);
+      ctx.lineTo(CX - 12, CY - R_OUT + 6);
+      ctx.lineTo(CX + 12, CY - R_OUT + 6);
+      ctx.closePath();
+      ctx.fillStyle = "#38bdf8";
+      ctx.fill();
+      ctx.strokeStyle = "#0c4a6e";
       ctx.lineWidth = 2;
       ctx.stroke();
     },
-    [angles, selected, stake],
+    [angles, phase],
   );
 
   useEffect(() => {
-    draw(rotation, selected);
-  }, [draw, rotation, selected]);
+    draw(rotation, selected, formatSatsShort(potPreview));
+  }, [draw, rotation, selected, potPreview]);
 
   useEffect(() => {
     return () => {
@@ -146,10 +192,9 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
     };
   }, []);
 
-  const startSpin = () => {
-    if (!selected || phase !== "pick") return;
+  const placeBet = () => {
+    if (!selected || phase !== "lobby") return;
     setPhase("countdown");
-    setStatus("LOCKING BET…");
     setCountdown(3);
     let n = 3;
     const t = window.setInterval(() => {
@@ -159,61 +204,43 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
         window.clearInterval(t);
         runSpin();
       }
-    }, 700);
+    }, 650);
   };
 
   const runSpin = () => {
     setPhase("spinning");
-    setStatus("WHEEL IS CRAZY…");
     const winIndex = pickWeightedIndex();
     const winSeg = WHEEL_SEGMENTS[winIndex];
-    const a = angles[winIndex];
-    // Pointer is at top = angle -π/2 in canvas... our arcs use cos(-mid).
-    // Target: segment mid should sit under pointer (top of semicircle = -π/2 in standard,
-    // which is mid angle of π/2 from left... Our mid for center segment ~ π/2.
-    // Pointer is at top of arc: direction from center is angle -π/2 in standard math = up.
-    // We use angle system where 0 is right, π is left, mid of semicircle top is π/2.
-    // We need mid + rot ≡ π/2 (mod full circle for the wedge under pointer)
-    // rot = π/2 - mid + 2π*k for some k
-    const targetMid = a.mid;
+    const targetMid = angles[winIndex].mid;
     const pointerAngle = Math.PI / 2;
     let targetRot = pointerAngle - targetMid;
-    // add multiple full turns for drama (spin in increasing rot)
-    const turns = 4 + Math.random() * 2;
     const startRot = rotation;
-    // normalize so we always spin "forward" a lot
-    while (targetRot < startRot + turns * Math.PI) {
+    while (targetRot < startRot + (4 + Math.random() * 2) * Math.PI) {
       targetRot += Math.PI * 2;
     }
-    // only semicircle content but rotation still full 2π for animation feel
-    const duration = 3200;
+    const duration = 3000;
     const t0 = performance.now();
 
     const tick = (now: number) => {
       const u = Math.min(1, (now - t0) / duration);
-      // ease-out cubic
       const e = 1 - (1 - u) ** 3;
       const r = startRot + (targetRot - startRot) * e;
       setRotation(r);
-      draw(r, selected);
-      if (u < 1) {
-        spinRef.current = requestAnimationFrame(tick);
-      } else {
-        finishSpin(winSeg);
-      }
+      draw(r, selected, formatSatsShort(potPreview));
+      if (u < 1) spinRef.current = requestAnimationFrame(tick);
+      else void finish(winSeg);
     };
     spinRef.current = requestAnimationFrame(tick);
   };
 
-  const finishSpin = async (winSeg: WheelSegment) => {
+  const finish = async (winSeg: WheelSegment) => {
     setLanded(winSeg);
     setPhase("result");
     const hit = winSeg.id === selected;
     setWon(hit);
     if (hit) {
-      const pay = stake * winSeg.mult;
+      const pay = stake * winSeg.mult * betUnits;
       setPayout(pay);
-      setStatus(`HIT ${winSeg.label} · YOU WIN`);
       try {
         await mockPaymentClient.claimReward({
           potId: `wheel_${session.sessionId}`,
@@ -222,7 +249,7 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
         });
         window.dispatchEvent(new Event("coinup:balance"));
       } catch {
-        setStatus("WIN RECORDED · CLAIM FAILED");
+        /* ignore mock failures */
       }
       onScore({
         gameId: session.gameId,
@@ -232,7 +259,6 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
       });
     } else {
       setPayout(0);
-      setStatus(`LANDED ${winSeg.label} · NO PAY`);
       onScore({
         gameId: session.gameId,
         sessionId: session.sessionId,
@@ -242,92 +268,153 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
     }
   };
 
-  return (
-    <div className="flex w-full max-w-md flex-col items-center gap-3">
-      <div className="w-full text-center">
-        <p className="font-pixel text-[10px] text-[var(--neon-amber)]">CRAZY WHEEL</p>
-        <p className="mt-1 font-pixel text-[8px] text-[var(--crt-green)]">{status}</p>
-        <p className="mt-1 font-pixel text-[8px] text-[#5c5c6b]">
-          STAKE {formatSats(stake).toUpperCase()}
-        </p>
-      </div>
+  const mm = String(Math.floor(timerLeft / 60)).padStart(2, "0");
+  const ss = String(timerLeft % 60).padStart(2, "0");
 
-      <div className="relative border-4 border-[#2a2a33] bg-[#0a0612] shadow-[6px_6px_0_#000]">
-        <canvas ref={canvasRef} width={W} height={H} className="pixelated block" />
+  return (
+    <div className="cw-shell">
+      {/* Top bar */}
+      <header className="cw-top">
+        <h1 className="cw-title">
+          CRAZY <span>WHEEL</span>
+        </h1>
+        <div className="cw-timer">
+          <span className="cw-timer-val">
+            {mm}:{ss}
+          </span>
+          <span className="cw-timer-sub">BET</span>
+        </div>
+        <div className="cw-players">
+          <p className="cw-players-h">1 ACTIVE · YOU</p>
+          <p className="cw-players-line">
+            {guest} · {formatSats(stake).toUpperCase()}
+          </p>
+          {selectedSeg && (
+            <p className="cw-players-line" style={{ color: selectedSeg.color }}>
+              BET {selectedSeg.label.toUpperCase()}
+            </p>
+          )}
+        </div>
+      </header>
+
+      {/* Stage */}
+      <div className="cw-stage">
+        <canvas ref={canvasRef} width={W} height={H} className="cw-canvas" />
         {phase === "countdown" && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-            <span className="font-pixel text-4xl text-[var(--neon-magenta)]">
-              {countdown > 0 ? countdown : "GO"}
-            </span>
+          <div className="cw-overlay">
+            <span className="cw-count">{countdown > 0 ? countdown : "GO"}</span>
           </div>
         )}
       </div>
 
-      {phase === "pick" && (
-        <>
-          <div className="grid w-full grid-cols-4 gap-2 sm:grid-cols-7">
-            {WHEEL_SEGMENTS.map((seg) => (
-              <button
-                key={seg.id}
-                type="button"
-                onClick={() => {
-                  setSelected(seg.id);
-                  setStatus(`BET ON ${seg.label} · ${seg.mult}X`);
-                }}
-                className="pixel-btn !px-1 !py-2 flex flex-col gap-1"
-                style={{
-                  background: seg.color,
-                  color: "#000",
-                  outline:
-                    selected === seg.id ? "3px solid #fff" : "3px solid #000",
-                }}
-              >
-                <span className="text-[8px]">{seg.label}</span>
-              </button>
-            ))}
-          </div>
-          <button
-            type="button"
-            className="pixel-btn pixel-btn--green w-full"
-            disabled={!selected}
-            onClick={startSpin}
-          >
-            PLACE BET · SPIN
-          </button>
-        </>
-      )}
-
-      {phase === "result" && landed && (
-        <div className="pixel-panel w-full border-[var(--neon-amber)] p-4 text-center">
-          <p className="font-pixel text-[10px] text-white">
-            {won ? "YOU WIN" : "BUST"}
-          </p>
-          <p className="mt-2 font-pixel text-[9px]" style={{ color: landed.color }}>
-            {landed.label} · {landed.mult}X
-          </p>
-          {won && (
-            <p className="mt-2 font-pixel text-[9px] text-[var(--crt-green)]">
-              +{formatSats(payout).toUpperCase()}
-            </p>
-          )}
-          <button
-            type="button"
-            className="pixel-btn mt-4 w-full"
-            onClick={() => {
-              // another spin requires new insert coin from play client
-              onExit();
-            }}
-          >
-            BACK · INSERT AGAIN TO REPLAY
-          </button>
+      {/* Segment pick chips (map to arc colors) */}
+      {phase === "lobby" && (
+        <div className="cw-chips">
+          {WHEEL_SEGMENTS.map((seg) => (
+            <button
+              key={seg.id}
+              type="button"
+              className={`cw-chip${selected === seg.id ? " cw-chip--on" : ""}`}
+              style={{ background: seg.color }}
+              onClick={() => setSelected(seg.id)}
+            >
+              {seg.label}
+            </button>
+          ))}
         </div>
       )}
 
-      {(phase === "pick" || phase === "countdown" || phase === "spinning") && (
-        <button type="button" className="pixel-btn pixel-btn--ghost" onClick={onExit}>
-          LEAVE CABINET
-        </button>
+      {phase === "result" && landed && (
+        <div className={`cw-result${won ? " cw-result--win" : ""}`}>
+          <p className="cw-result-title">{won ? "YOU WIN" : "NO HIT"}</p>
+          <p style={{ color: landed.color }}>
+            LANDED {landed.label.toUpperCase()}
+          </p>
+          {won && (
+            <p className="cw-result-pay">+{formatSats(payout).toUpperCase()}</p>
+          )}
+        </div>
       )}
+
+      {/* Bottom bet bar — product layout */}
+      <footer className="cw-bar">
+        <div className="cw-user">
+          <span className="cw-avatar">₿</span>
+          <div>
+            <p className="cw-user-name">{guest}</p>
+            <p className="cw-user-bal">{formatSats(stake).toUpperCase()} STAKE</p>
+          </div>
+        </div>
+
+        <div className="cw-bet-ctrl">
+          <button
+            type="button"
+            className="cw-step"
+            disabled={phase !== "lobby" || betUnits <= 1}
+            onClick={() => setBetUnits((n) => Math.max(1, n - 1))}
+          >
+            −
+          </button>
+          <span className="cw-bet-amt">{betUnits}</span>
+          <button
+            type="button"
+            className="cw-step"
+            disabled={phase !== "lobby" || betUnits >= 5}
+            onClick={() => setBetUnits((n) => Math.min(5, n + 1))}
+          >
+            +
+          </button>
+        </div>
+
+        {phase === "lobby" ? (
+          <button
+            type="button"
+            className="cw-place"
+            disabled={!selected}
+            onClick={placeBet}
+          >
+            PLACE BET
+          </button>
+        ) : phase === "result" ? (
+          <button type="button" className="cw-place" onClick={onExit}>
+            AGAIN
+          </button>
+        ) : (
+          <button type="button" className="cw-place cw-place--wait" disabled>
+            {phase === "countdown" ? "LOCKING…" : "SPINNING…"}
+          </button>
+        )}
+
+        <button type="button" className="cw-exit" onClick={onExit}>
+          EXIT
+        </button>
+      </footer>
+
+      <p className="cw-brand-foot">
+        COINUP ARCADE · SATS ONLY · PLAY AT YOUR OWN RISK
+      </p>
     </div>
   );
+}
+
+function formatSatsShort(sats: number): string {
+  if (sats >= 100_000) return `${(sats / 100_000).toFixed(2)}k sats`;
+  return `${sats.toLocaleString()} sats`;
+}
+
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
 }

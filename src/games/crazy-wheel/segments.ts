@@ -1,24 +1,22 @@
-/** Crazy Wheel segments — colored wedges with payout multipliers. */
+/** Crazy Wheel segments — matches the live product arc colors. */
 
 export type WheelSegment = {
   id: string;
   label: string;
-  /** Payout multiplier on stake (integer-friendly: stored as ×100 for display) */
   mult: number;
   color: string;
-  /** Relative weight for spin landing (higher = more common) */
   weight: number;
 };
 
-/** Left → right around the arc (screen coords). */
+/** Left → right around the upper arc (like production Crazy Wheel). */
 export const WHEEL_SEGMENTS: WheelSegment[] = [
-  { id: "red", label: "x2", mult: 2, color: "#EF4444", weight: 18 },
-  { id: "purple", label: "x3", mult: 3, color: "#8B5CF6", weight: 12 },
-  { id: "orange", label: "x2", mult: 2, color: "#F97316", weight: 18 },
-  { id: "gold", label: "x5", mult: 5, color: "#EAB308", weight: 6 },
-  { id: "yellow", label: "x3", mult: 3, color: "#FDE047", weight: 12 },
-  { id: "lime", label: "x2", mult: 2, color: "#84CC16", weight: 18 },
-  { id: "green", label: "x10", mult: 10, color: "#22C55E", weight: 3 },
+  { id: "red", label: "2x", mult: 2, color: "#E85A4F", weight: 16 },
+  { id: "purple", label: "3x", mult: 3, color: "#8B5CF6", weight: 11 },
+  { id: "orange", label: "2x", mult: 2, color: "#F59E0B", weight: 16 },
+  { id: "gold", label: "5x", mult: 5, color: "#EAB308", weight: 6 },
+  { id: "yellow", label: "3x", mult: 3, color: "#FACC15", weight: 11 },
+  { id: "lime", label: "2x", mult: 2, color: "#A3E635", weight: 16 },
+  { id: "green", label: "10x", mult: 10, color: "#4ADE80", weight: 3 },
 ];
 
 export function pickWeightedIndex(segments: WheelSegment[] = WHEEL_SEGMENTS): number {
@@ -31,9 +29,7 @@ export function pickWeightedIndex(segments: WheelSegment[] = WHEEL_SEGMENTS): nu
   return segments.length - 1;
 }
 
-/** Angle span for each segment (semicircle π radians). */
-export function segmentAngles(count: number): { start: number; end: number; mid: number }[] {
-  // Semicircle from π (left) to 0 (right) — top arc
+export function segmentAngles(count: number) {
   const span = Math.PI / count;
   return Array.from({ length: count }, (_, i) => {
     const start = Math.PI - i * span;
