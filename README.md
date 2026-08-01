@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CoinUp
 
-## Getting Started
+**Insert Bitcoin. Play. Win Bitcoin.**
 
-First, run the development server:
+Virtual arcade games for [Arch Network](https://arch.network) — Bitcoin as the payment and rewards token for every game.
+
+## Vision
+
+CoinUp is an on-chain arcade: players insert satoshis to play classic and original cabinet-style games, climb leaderboards, and cash out rewards in BTC. Settlement stays Bitcoin-native via Arch — no bridges, no synthetic play-money.
+
+| Pillar | Meaning |
+|--------|---------|
+| **Play with BTC** | Entry fees and credits are real satoshis |
+| **Win with BTC** | High scores, tournaments, and jackpots pay out in Bitcoin |
+| **Arch-native** | Smart contract logic and settlement on Arch Network |
+| **Cabinet culture** | Retro arcade feel with modern multiplayer rails |
+
+## Stack
+
+- **Frontend** — Next.js (App Router), TypeScript, Tailwind CSS
+- **Games** — Modular client games registered in a shared arcade lobby
+- **Payments / rewards** — Bitcoin via Arch Network programs (scaffolded)
+- **Deploy** — Static-friendly build path for GitHub Pages or any host
+
+## Develop
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+npm start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project layout
 
-## Learn More
+```
+src/
+  app/                 # Next.js routes (lobby + play)
+  components/          # Arcade UI shell
+  games/               # Game registry + individual games
+  lib/payments/        # BTC credit / reward types and Arch stubs
+docs/                  # Vision and architecture notes
+programs/              # Future Arch Network on-chain programs
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Status
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Early scaffold. Lobby UI and game registry are in place. Bitcoin payment rails and Arch programs are typed stubs — ready for implementation.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Links
 
-## Deploy on Vercel
+- Repo: [github.com/buildtogetherlabs/coinup](https://github.com/buildtogetherlabs/coinup)
+- Arch Network: [arch.network](https://arch.network)
+- Build Together Labs: [github.com/buildtogetherlabs](https://github.com/buildtogetherlabs)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT — Build Together Labs
