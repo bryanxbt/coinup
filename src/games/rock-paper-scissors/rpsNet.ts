@@ -1,9 +1,9 @@
 /**
  * Live RPS matchmaking via PeerJS (free cloud broker).
  *
- * y-webrtc was too flaky across browsers (both players stuck in queue).
- * PeerJS: first player claims a seat host ID; second connects as guest.
- * Host owns match state and broadcasts updates.
+ * Host claims a seat ID; guest connects. Host owns match state.
+ * Critical: PeerJS connections may already be "open" when we wire handlers —
+ * always flush hello/match on open state, don't only listen for the event.
  */
 
 import type { LiveMatch, RpsChoice, Seat } from "./logic";
@@ -13,10 +13,9 @@ import {
   emptyMatch,
 } from "./logic";
 
-const SEAT_PREFIX = "coinup-rps-seat-v3-";
+const SEAT_PREFIX = "coinup-rps-seat-v4-";
 const SEAT_COUNT = 8;
-/** Also mirror matchmaking on BroadcastChannel (same browser, two tabs). */
-const BC_NAME = "coinup-rps-bc-v3";
+const BC_NAME = "coinup-rps-bc-v4";
 
 export type RpsNetHandle = {
   playerId: string;
@@ -76,43 +75,42 @@ export async function joinRpsLive(opts: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let conn: any = null;
   let bc: BroadcastChannel | null = null;
+  let revealTimer: number | null = null;
 
-  const emit = (status: RpsNetView["status"], message: string, queueSize = 1) => {
+  const emit = (
+    status: RpsNetView["status"],
+    message: string,
+    queueSize = 1,
+  ) => {
     if (destroyed) return;
-    if (match?.winnerId === opts.playerId && match.phase === "finished" && !winClaimed) {
+    if (
+      match?.winnerId === opts.playerId &&
+      match.phase === "finished" &&
+      !winClaimed
+    ) {
       winClaimed = true;
       opts.callbacks.onWin(match.potSats, match);
     }
-    opts.callbacks.onView({
-      status,
-      message,
-      match,
-      queueSize,
-    });
+    opts.callbacks.onView({ status, message, match, queueSize });
   };
 
-  const broadcastState = () => {
-    if (!match) return;
-    const msg: WireMsg = { type: "state", match };
+  const send = (msg: WireMsg) => {
     try {
-      conn?.send(msg);
+      if (conn?.open) conn.send(msg);
     } catch {
       /* ignore */
     }
     try {
-      bc?.postMessage({ ...msg, channel: "state" });
+      bc?.postMessage({ ...msg, fromId: opts.playerId });
     } catch {
       /* ignore */
     }
   };
 
-  const setMatch = (m: LiveMatch, status?: RpsNetView["status"]) => {
+  const setMatch = (m: LiveMatch) => {
     match = m;
-    const st =
-      status ??
-      (m.phase === "finished"
-        ? "finished"
-        : ("matched" as const));
+    const status: RpsNetView["status"] =
+      m.phase === "finished" ? "finished" : "matched";
     const message =
       m.phase === "finished"
         ? m.winnerId === opts.playerId
@@ -121,17 +119,32 @@ export async function joinRpsLive(opts: {
         : m.phase === "reveal"
           ? "ROUND RESULT"
           : `ROUND ${m.round} · LOCK IN`;
-    emit(st, message, 2);
-    if (role === "host") broadcastState();
-    if (m.phase === "reveal" && !m.winnerId) {
-      window.setTimeout(() => {
+    emit(status, message, 2);
+
+    if (role === "host") {
+      send({ type: "state", match: m });
+    }
+
+    if (m.phase === "reveal" && !m.winnerId && role === "host") {
+      if (revealTimer) window.clearTimeout(revealTimer);
+      revealTimer = window.setTimeout(() => {
         if (destroyed || !match || match.phase !== "reveal") return;
-        if (role === "host") {
-          match = advanceAfterReveal(match);
-          setMatch(match);
-        }
+        match = advanceAfterReveal(match);
+        setMatch(match);
       }, 1800);
     }
+  };
+
+  const hostCreateMatch = (guest: Seat, guestEntry: number) => {
+    if (match) return;
+    const m = emptyMatch(
+      `rps_${mySeat.id.slice(-4)}_${guest.id.slice(-4)}_${Date.now().toString(36)}`,
+      mySeat,
+      guest,
+      Math.max(opts.entrySats, guestEntry),
+    );
+    setMatch(m);
+    send({ type: "match", match: m });
   };
 
   const onRemotePick = (playerId: string, choice: RpsChoice) => {
@@ -140,44 +153,36 @@ export async function joinRpsLive(opts: {
     setMatch(match);
   };
 
+  const handleMsg = (raw: unknown, asHost: boolean) => {
+    const msg = raw as WireMsg;
+    if (!msg || typeof msg !== "object" || !("type" in msg)) return;
+
+    if (msg.type === "hello" && asHost) {
+      hostCreateMatch(msg.seat, msg.entrySats);
+      return;
+    }
+    if (msg.type === "match" && !asHost) {
+      role = "guest";
+      setMatch(msg.match);
+      return;
+    }
+    if (msg.type === "state") {
+      // Guest applies host state; host ignores echo
+      if (role !== "host") {
+        setMatch(msg.match);
+      }
+      return;
+    }
+    if (msg.type === "pick" && asHost) {
+      onRemotePick(msg.playerId, msg.choice);
+    }
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wireConn = (c: any, asHost: boolean) => {
     conn = c;
-    c.on("data", (raw: unknown) => {
-      const msg = raw as WireMsg;
-      if (!msg || typeof msg !== "object") return;
 
-      if (msg.type === "hello" && asHost && !match) {
-        const m = emptyMatch(
-          `rps_${mySeat.id.slice(-4)}_${msg.seat.id.slice(-4)}_${Date.now().toString(36)}`,
-          mySeat,
-          msg.seat,
-          Math.max(opts.entrySats, msg.entrySats),
-        );
-        setMatch(m);
-        try {
-          c.send({ type: "match", match: m } satisfies WireMsg);
-        } catch {
-          /* ignore */
-        }
-        return;
-      }
-
-      if (msg.type === "match" && !asHost) {
-        setMatch(msg.match);
-        return;
-      }
-
-      if (msg.type === "state") {
-        match = msg.match;
-        setMatch(msg.match);
-        return;
-      }
-
-      if (msg.type === "pick" && asHost) {
-        onRemotePick(msg.playerId, msg.choice);
-      }
-    });
+    c.on("data", (raw: unknown) => handleMsg(raw, asHost));
 
     c.on("close", () => {
       if (destroyed) return;
@@ -186,25 +191,33 @@ export async function joinRpsLive(opts: {
       }
     });
 
-    c.on("open", () => {
-      if (!asHost) {
-        try {
-          c.send({
-            type: "hello",
-            seat: mySeat,
-            entrySats: opts.entrySats,
-          } satisfies WireMsg);
-        } catch {
-          /* ignore */
-        }
+    const onOpen = () => {
+      if (asHost) {
+        emit("queued", "OPPONENT LINKED · STARTING…", 2);
+        // Ask guest to hello again in case we missed first packet
+        send({ type: "ping" });
       } else {
-        emit("queued", "OPPONENT LINKING…", 2);
+        // Guest: always send hello when channel is ready
+        send({
+          type: "hello",
+          seat: mySeat,
+          entrySats: opts.entrySats,
+        });
+        emit("queued", "SENT HELLO · WAITING FOR MATCH…", 2);
       }
-    });
+    };
+
+    // CRITICAL: connection may already be open — event won't re-fire
+    if (c.open) {
+      onOpen();
+    } else {
+      c.on("open", onOpen);
+    }
   };
 
   const destroy = () => {
     destroyed = true;
+    if (revealTimer) window.clearTimeout(revealTimer);
     try {
       conn?.close();
     } catch {
@@ -224,35 +237,55 @@ export async function joinRpsLive(opts: {
 
   emit("connecting", "OPENING LIVE LINK…", 0);
 
-  // --- BroadcastChannel path (two tabs, same browser) ---
+  // BroadcastChannel (same browser, normal + sometimes works with care)
   try {
     bc = new BroadcastChannel(BC_NAME);
     bc.onmessage = (ev) => {
-      const data = ev.data as WireMsg & { fromId?: string; wantMatch?: boolean };
+      const data = ev.data as WireMsg & {
+        fromId?: string;
+        wantMatch?: boolean;
+        hostWaiting?: boolean;
+        seat?: Seat;
+        entrySats?: number;
+      };
       if (!data || data.fromId === opts.playerId) return;
 
-      if (data.type === "hello" && role === "host" && !match && data.wantMatch) {
-        // Guest announced via BC — host creates match and posts it
-        const guestSeat = (data as unknown as { seat: Seat }).seat;
+      // Guest sees host waiting — introduce ourselves
+      if (
+        data.hostWaiting &&
+        role !== "host" &&
+        !match &&
+        data.type === "hello"
+      ) {
+        bc?.postMessage({
+          type: "hello",
+          fromId: opts.playerId,
+          seat: mySeat,
+          entrySats: opts.entrySats,
+          wantMatch: true,
+        });
+        return;
+      }
+
+      if (
+        data.type === "hello" &&
+        role === "host" &&
+        !match &&
+        (data.wantMatch || data.seat)
+      ) {
+        const guestSeat = data.seat;
         if (!guestSeat) return;
-        const m = emptyMatch(
-          `rps_bc_${Date.now().toString(36)}`,
-          mySeat,
-          guestSeat,
-          opts.entrySats,
-        );
-        setMatch(m);
-        bc?.postMessage({ type: "match", match: m, fromId: opts.playerId });
+        hostCreateMatch(guestSeat, data.entrySats ?? opts.entrySats);
         return;
       }
 
       if (data.type === "match" && !match) {
-        role = role ?? "guest";
+        role = "guest";
         setMatch(data.match);
         return;
       }
 
-      if (data.type === "state" && match) {
+      if (data.type === "state" && data.match && role !== "host") {
         setMatch(data.match);
         return;
       }
@@ -260,12 +293,22 @@ export async function joinRpsLive(opts: {
       if (data.type === "pick" && role === "host") {
         onRemotePick(data.playerId, data.choice);
       }
+
+      if (data.type === "ping" && role !== "host" && !match) {
+        bc?.postMessage({
+          type: "hello",
+          fromId: opts.playerId,
+          seat: mySeat,
+          entrySats: opts.entrySats,
+          wantMatch: true,
+        });
+      }
     };
   } catch {
     bc = null;
   }
 
-  // --- PeerJS path (cross-browser) ---
+  // PeerJS
   try {
     const PeerCtor = (await import("peerjs")).default;
 
@@ -284,9 +327,8 @@ export async function joinRpsLive(opts: {
           role = "host";
           done("host");
         });
-        p.on("error", (err) => {
-          const t = (err as { type?: string }).type;
-          if (t === "unavailable-id") {
+        p.on("error", (err: { type?: string }) => {
+          if (err.type === "unavailable-id") {
             try {
               p.destroy();
             } catch {
@@ -304,51 +346,57 @@ export async function joinRpsLive(opts: {
             }
             done("taken");
           }
-        }, 4000);
+        }, 5000);
       });
 
     const connectAsGuest = (seatIndex: number): Promise<boolean> =>
       new Promise((resolve) => {
         const hostId = `${SEAT_PREFIX}${seatIndex}`;
         const p = new PeerCtor({ debug: 0 });
-        peer = p;
+        let settled = false;
+        const finish = (ok: boolean) => {
+          if (settled) return;
+          settled = true;
+          if (!ok) {
+            try {
+              p.destroy();
+            } catch {
+              /* ignore */
+            }
+            if (peer === p) peer = null;
+          }
+          resolve(ok);
+        };
+
         p.on("open", () => {
+          peer = p;
           const c = p.connect(hostId, { reliable: true });
-          let ok = false;
           c.on("open", () => {
-            ok = true;
             role = "guest";
             wireConn(c, false);
-            resolve(true);
+            finish(true);
           });
-          c.on("error", () => resolve(false));
-          window.setTimeout(() => {
-            if (!ok) resolve(false);
-          }, 5000);
+          c.on("error", () => finish(false));
+          window.setTimeout(() => finish(false), 6000);
         });
-        p.on("error", () => resolve(false));
+        p.on("error", () => finish(false));
+        window.setTimeout(() => finish(false), 8000);
       });
 
     let linked = false;
 
-    // 1) Prefer joining an existing host (avoids two lonely hosts)
+    // Join existing host first
     for (let i = 0; i < SEAT_COUNT && !linked && !destroyed; i++) {
       emit("connecting", `LOOKING FOR HOST ${i + 1}/${SEAT_COUNT}…`, 0);
       const joined = await connectAsGuest(i);
       if (joined) {
         linked = true;
-        emit("queued", "LINKED · STARTING MATCH…", 2);
+        // hello already sent in wireConn when open
         break;
       }
-      try {
-        peer?.destroy();
-      } catch {
-        /* ignore */
-      }
-      peer = null;
     }
 
-    // 2) No host found — claim a seat and wait
+    // Claim host seat
     for (let i = 0; i < SEAT_COUNT && !linked && !destroyed; i++) {
       emit("connecting", `CLAIMING SEAT ${i + 1}/${SEAT_COUNT}…`, 0);
       const result = await tryHostSeat(i);
@@ -368,7 +416,11 @@ export async function joinRpsLive(opts: {
         peer.on("connection", (c: unknown) => {
           if (match) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (c as any).close();
+            try {
+              (c as { close: () => void }).close();
+            } catch {
+              /* ignore */
+            }
             return;
           }
           wireConn(c, true);
@@ -378,10 +430,9 @@ export async function joinRpsLive(opts: {
       }
     }
 
-    // BroadcastChannel guest: if someone is host in another tab
     if (!linked && bc) {
       role = "guest";
-      emit("queued", "WAITING FOR OPPONENT… (LOCAL BUS)", 1);
+      emit("queued", "WAITING ON LOCAL BUS…", 1);
       bc.postMessage({
         type: "hello",
         fromId: opts.playerId,
@@ -389,17 +440,12 @@ export async function joinRpsLive(opts: {
         entrySats: opts.entrySats,
         wantMatch: true,
       });
-      // Host BC handler will post match
       linked = true;
     }
 
     if (!linked) {
-      emit(
-        "error",
-        "COULD NOT OPEN LIVE LINK — TRY PRACTICE OR SAME WIFI",
-        0,
-      );
-    } else if (role === "host") {
+      emit("error", "COULD NOT OPEN LIVE LINK — TRY PRACTICE", 0);
+    } else if (role === "host" && !match) {
       emit("queued", "WAITING FOR OPPONENT TO INSERT COIN…", 1);
     }
   } catch {
@@ -416,27 +462,14 @@ export async function joinRpsLive(opts: {
         match = applyPick(match, opts.playerId, choice);
         setMatch(match);
       } else {
-        // optimistic local apply when state echoes; still send pick
-        const msg: WireMsg = {
-          type: "pick",
-          playerId: opts.playerId,
-          choice,
-        };
-        try {
-          conn?.send(msg);
-        } catch {
-          /* ignore */
-        }
-        try {
-          bc?.postMessage({ ...msg, fromId: opts.playerId });
-        } catch {
-          /* ignore */
-        }
-        // apply locally so UI locks pick immediately
+        send({ type: "pick", playerId: opts.playerId, choice });
+        // Optimistic lock UI — host will echo full state
         match = applyPick(match, opts.playerId, choice);
         emit(
           match.phase === "finished" ? "finished" : "matched",
-          match.phase === "reveal" ? "ROUND RESULT" : `ROUND ${match.round} · LOCKED`,
+          match.phase === "reveal"
+            ? "ROUND RESULT"
+            : `ROUND ${match.round} · LOCKED`,
           2,
         );
       }

@@ -114,7 +114,7 @@ export function RockPaperScissors({ session, onScore, onExit }: GamePlayProps) {
         )}
       </div>
 
-      {(view.status === "queued" || view.status === "connecting") && (
+      {(view.status === "queued" || view.status === "connecting") && !match && (
         <div className="pixel-panel w-full border-[var(--crt-green)] p-5 text-center">
           <p className="font-pixel text-[9px] leading-relaxed text-[var(--crt-green)]">
             {view.message}
@@ -123,9 +123,8 @@ export function RockPaperScissors({ session, onScore, onExit }: GamePlayProps) {
             LIVE DUEL ROOM · BOTH MUST PAY ENTRY
           </p>
           <p className="mt-4 font-pixel text-[7px] leading-relaxed text-[#3a3a44]">
-            OPEN THIS CABINET IN TWO BROWSERS (OR TABS), INSERT COIN ON BOTH.
-            WINNER TAKES THE FULL POT. ALLOW CAMERA/MIC PROMPTS IF SHOWN (SOME
-            BROWSERS GATE WEBRTC).
+            NORMAL WINDOW + INCOGNITO. INSERT COIN ON BOTH. WHEN LINKED YOU
+            SHOULD SEE ROCK / PAPER / SCISSORS BUTTONS.
           </p>
           <button
             type="button"
