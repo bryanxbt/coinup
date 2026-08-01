@@ -26,20 +26,31 @@ type ChipProps = {
 };
 
 export function ChipPortrait({
-  size = 280,
+  size = 256,
   className = "",
   priority = false,
   showBadge = true,
 }: ChipProps) {
+  // Prefer native 256 grid so browser scales integer pixels (Pixel System)
+  const src =
+    size <= 32
+      ? BRAND.assets.chipGrid32
+      : size <= 64
+        ? BRAND.assets.chipGrid64
+        : size <= 128
+          ? BRAND.assets.chipGrid128
+          : BRAND.assets.chipGrid256;
+
   return (
     <div className={`relative inline-flex flex-col items-center ${className}`}>
       <div className="relative" style={{ width: size, height: size }}>
         <Image
-          src={withBase(CHIP.image)}
+          src={withBase(src)}
           alt={`${CHIP.fullTitle} — CoinUp mascot`}
           width={size}
           height={size}
           priority={priority}
+          unoptimized
           className="pixelated h-full w-full object-contain drop-shadow-[0_0_40px_rgba(37,99,235,0.4)]"
         />
       </div>

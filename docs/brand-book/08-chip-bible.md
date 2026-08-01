@@ -3,7 +3,13 @@
 Chip is the arcade manager. He runs the place, keeps things fun, and introduces new games.  
 **Part robot, part legend, 100% CoinUp.**
 
-**Hero art:** `public/images/chip-arcade-manager.png`  
+**Hero art (true pixel grid):**  
+- Master: `public/images/chip-arcade-manager-256.png` (256×256, solid palette hex only)  
+- Display upscale: `public/images/chip-arcade-manager.png` (nearest-neighbor ×4)  
+- UI sizes: `-128` / `-64` / `-32` (nearest derived)  
+- Original AI/smooth source (archive only): `chip-arcade-manager-original.png`  
+- Convert tool: `scripts/to_pixel_art.py`  
+
 **Board:** Brand Book v1 panels 03, 08, 16
 
 ---

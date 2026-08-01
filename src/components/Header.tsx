@@ -16,10 +16,11 @@ export function Header({
     <header className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 px-4 py-4 sm:px-8">
       <Link href="/" className="group flex items-center gap-2.5">
         <Image
-          src={withBase("/images/chip-arcade-manager.png")}
+          src={withBase("/images/chip-arcade-manager-32.png")}
           alt="Chip the Arcade Manager"
-          width={36}
-          height={36}
+          width={32}
+          height={32}
+          unoptimized
           className="pixelated rounded-md"
         />
         <span className="flex items-baseline gap-2">

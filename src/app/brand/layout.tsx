@@ -21,10 +21,11 @@ export default function BrandLayout({
         <div className="sticky top-0 max-h-screen overflow-y-auto py-4 pr-2">
           <Link href="/brand" className="mb-4 flex items-center gap-2 px-2">
             <Image
-              src={withBase(BRAND.assets.chipHero)}
+              src={withBase(BRAND.assets.chipGrid32)}
               alt="Chip"
               width={32}
               height={32}
+              unoptimized
               className="pixelated"
             />
             <div>

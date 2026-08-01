@@ -40,7 +40,7 @@ export default function LobbyPage() {
               {BRAND.taglines.jacket}
             </ChipBubble>
           </div>
-          <ChipPortrait size={260} priority className="shrink-0" />
+          <ChipPortrait size={256} priority className="shrink-0" />
         </section>
 
         {/* Open cabinets */}

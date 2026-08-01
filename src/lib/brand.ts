@@ -79,7 +79,13 @@ export const BRAND = {
   assets: {
     brandBookV1: "/images/brand-book-v1.jpg",
     brandGuideConcept: "/images/brand-guide-concept.jpg",
+    /** Display (nearest-neighbor upscale of 256 grid) */
     chipHero: "/images/chip-arcade-manager.png",
+    /** True pixel masters — one solid palette hex per pixel */
+    chipGrid256: "/images/chip-arcade-manager-256.png",
+    chipGrid128: "/images/chip-arcade-manager-128.png",
+    chipGrid64: "/images/chip-arcade-manager-64.png",
+    chipGrid32: "/images/chip-arcade-manager-32.png",
   },
   socialStyle: "BOLD · FUN · PIXEL PERFECT · COMMUNITY DRIVEN",
   dos: [
