@@ -20,11 +20,11 @@ export default function LobbyPage() {
 
   const heroLines = useMemo(
     () => [
-      BRAND.taglines.floor.toUpperCase(),
-      BRAND.forever,
-      `BITCOIN ARCADE · ${BRAND.chain.toUpperCase()}`,
-      BRAND.taglines.product.toUpperCase(),
-      BRAND.mission.bar,
+      "COINUP ARCADE.",
+      "BUILT FOR BITCOIN.",
+      "POWERED BY ARCH NETWORK.",
+      "INSERT SATS TO PLAY. WIN SATS.",
+      "PLAY AT YOUR OWN RISK.",
     ],
     [],
   );
