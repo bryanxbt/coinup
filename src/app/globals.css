@@ -875,6 +875,54 @@ body::after {
   line-height: 1.5;
 }
 
+.cw-players-line--bal {
+  color: #4ade80;
+}
+
+.cw-presets {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 0.5rem 0.5rem;
+}
+
+.cw-preset {
+  font-family: var(--font-pixel), monospace;
+  font-size: 7px;
+  padding: 6px 8px;
+  border: 2px solid #2a2a33;
+  background: #14141a;
+  color: #a1a1aa;
+  cursor: pointer;
+}
+
+.cw-preset--on {
+  border-color: #fbbf24;
+  color: #fbbf24;
+  background: #1a1400;
+}
+
+.cw-preset:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.cw-error {
+  margin: 0;
+  padding: 0.4rem 0.75rem;
+  text-align: center;
+  font-family: var(--font-pixel), monospace;
+  font-size: 8px;
+  color: #f97316;
+}
+
+.cw-result-bal {
+  margin: 0.5rem 0 0;
+  font-size: 7px;
+  color: #71717a;
+}
+
 .cw-stage {
   position: relative;
   background: #1a1030;

@@ -74,16 +74,16 @@ const crazyWheel: GameModule = {
   meta: {
     id: "crazy-wheel",
     title: "Crazy Wheel",
-    tagline: "Pick a color. Spin the arc. Hit your mult",
+    tagline: "Bet any sats. Spin again and again",
     description:
-      "Insert sats as your stake. Pick a colored wedge. Countdown, spin the crazy arc — land on your color to cash the multiplier. Miss and the house keeps the stake.",
-    costSats: 1000,
+      "Sit at the wheel free. Bet sats from your wallet each spin — pick a color, place bet, hit your mult. Stay and keep spinning without re-entering.",
+    costSats: 100, // min bet (entry is free; bets charged in-game)
     avgSessionSec: 45,
     category: "classic",
     status: "playable",
     accent: "#FFB347",
     glyph: "🎡",
-    controls: ["Pick color", "Spin"],
+    controls: ["Pick color", "Bet amount", "Spin again"],
     highScoreLabel: "Biggest hit",
     players: 1,
   },

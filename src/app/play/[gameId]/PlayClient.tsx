@@ -20,20 +20,31 @@ export function PlayClient({ meta }: { meta: GameMeta }) {
   const insertCoin = useCallback(async () => {
     setError(null);
     try {
-      const result = await mockPaymentClient.insertCoin({
-        gameId: meta.id,
-        costSats: meta.costSats,
-        playerId: getPlayerId(),
-      });
+      // Crazy Wheel: free to sit down — each spin bets from wallet inside the game
+      const freeEntry = meta.id === "crazy-wheel";
+      const cost = freeEntry ? 0 : meta.costSats;
+      const result =
+        cost > 0
+          ? await mockPaymentClient.insertCoin({
+              gameId: meta.id,
+              costSats: cost,
+              playerId: getPlayerId(),
+            })
+          : {
+              sessionId: `free_${Date.now().toString(36)}`,
+              remainingSats: (
+                await mockPaymentClient.getBalance(getPlayerId())
+              ).availableSats,
+            };
       setSession({
         gameId: meta.id,
         sessionId: result.sessionId,
-        creditsSpent: meta.costSats,
+        creditsSpent: cost,
         startedAt: Date.now(),
       });
       setPhase("playing");
       setLastScore(null);
-      window.dispatchEvent(new Event("coinup:balance"));
+      if (cost > 0) window.dispatchEvent(new Event("coinup:balance"));
     } catch (e) {
       setPhase("error");
       setError(e instanceof Error ? e.message : "Could not insert coin");
@@ -82,7 +93,9 @@ export function PlayClient({ meta }: { meta: GameMeta }) {
             className="mt-4 font-pixel text-[10px]"
             style={{ color: meta.accent }}
           >
-            {formatSats(meta.costSats).toUpperCase()} / PLAY
+            {meta.id === "crazy-wheel"
+              ? "BET FROM WALLET · MIN 100 SATS"
+              : `${formatSats(meta.costSats).toUpperCase()} / PLAY`}
             {meta.players === 2 && meta.potSats
               ? ` · POT ${formatSats(meta.potSats).toUpperCase()}`
               : ""}
@@ -100,8 +113,8 @@ export function PlayClient({ meta }: { meta: GameMeta }) {
           <div className="text-5xl">{meta.glyph}</div>
           {meta.id === "crazy-wheel" && (
             <p className="text-center font-pixel text-[8px] leading-relaxed text-[#8a8a9a]">
-              PICK A COLOR ON THE ARC. PLACE BET. SPIN. HIT YOUR MULT — SATS
-              ONLY.
+              FREE TO ENTER. BET ANY SATS FROM YOUR WALLET. KEEP SPINNING —
+              NO NEED TO LEAVE THE CABINET.
             </p>
           )}
           {meta.players === 2 && (
@@ -111,7 +124,9 @@ export function PlayClient({ meta }: { meta: GameMeta }) {
             </p>
           )}
           <button type="button" onClick={insertCoin} className="pixel-btn w-full">
-            INSERT {formatSats(meta.costSats).toUpperCase()}
+            {meta.id === "crazy-wheel"
+              ? "ENTER WHEEL"
+              : `INSERT ${formatSats(meta.costSats).toUpperCase()}`}
           </button>
           <Link href="/" className="font-pixel text-[8px] text-[#5c5c6b] hover:text-[var(--crt-green)]">
             ← LOBBY

@@ -1,9 +1,8 @@
 "use client";
 
 /**
- * Crazy Wheel — frontend cabinet shell branded for CoinUp.
- * Layout mirrors the live product (arc, pot, chest, bet bar);
- * spin/payout is a local mock until wired to real rails.
+ * Crazy Wheel — free-to-enter cabinet; each spin bets from wallet balance.
+ * Stay at the machine and keep spinning without re-inserting at the door.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -24,28 +23,42 @@ const CY = H - 28;
 const R_OUT = 168;
 const R_IN = 88;
 
+/** Quick-pick stake amounts (sats) */
+const BET_PRESETS = [100, 500, 1_000, 2_500, 5_000, 10_000] as const;
+
 type Phase = "lobby" | "countdown" | "spinning" | "result";
 
 export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
-  const stake = session.creditsSpent;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const spinRef = useRef<number | null>(null);
   const [phase, setPhase] = useState<Phase>("lobby");
   const [selected, setSelected] = useState<string | null>(null);
-  const [betUnits, setBetUnits] = useState(1); // × stake slices for UI (display only on top of paid stake)
+  const [betSats, setBetSats] = useState(1_000);
+  const [balance, setBalance] = useState(0);
+  const [activeStake, setActiveStake] = useState(0); // stake locked for current spin
   const [countdown, setCountdown] = useState(3);
   const [rotation, setRotation] = useState(0);
   const [landed, setLanded] = useState<WheelSegment | null>(null);
   const [won, setWon] = useState(false);
   const [payout, setPayout] = useState(0);
   const [timerLeft, setTimerLeft] = useState(24);
+  const [error, setError] = useState<string | null>(null);
 
   const angles = useMemo(() => segmentAngles(WHEEL_SEGMENTS.length), []);
   const guest = useMemo(() => getGuestName(), []);
   const selectedSeg = WHEEL_SEGMENTS.find((s) => s.id === selected) ?? null;
-  const potPreview = selectedSeg ? stake * selectedSeg.mult * betUnits : stake;
+  const potPreview = selectedSeg ? betSats * selectedSeg.mult : betSats;
 
-  // Attract timer (cosmetic, like production)
+  const refreshBalance = useCallback(async () => {
+    const bal = await mockPaymentClient.getBalance(getPlayerId());
+    setBalance(bal.availableSats);
+    return bal.availableSats;
+  }, []);
+
+  useEffect(() => {
+    void refreshBalance();
+  }, [refreshBalance]);
+
   useEffect(() => {
     if (phase !== "lobby") return;
     const t = window.setInterval(() => {
@@ -61,7 +74,6 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      // isometric-ish hex floor (brand void + purple tint)
       const g = ctx.createLinearGradient(0, 0, W, H);
       g.addColorStop(0, "#1a1030");
       g.addColorStop(0.5, "#2a1848");
@@ -69,7 +81,6 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, W, H);
 
-      // diamond grid
       ctx.strokeStyle = "rgba(0,0,0,0.25)";
       ctx.lineWidth = 1;
       const step = 22;
@@ -84,7 +95,6 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
         ctx.stroke();
       }
 
-      // cyan arc rail under segments
       ctx.beginPath();
       ctx.arc(CX, CY, R_OUT + 10, Math.PI, 0, false);
       ctx.strokeStyle = "rgba(34, 211, 238, 0.55)";
@@ -96,7 +106,6 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // segments as rounded “cards” on the arc
       WHEEL_SEGMENTS.forEach((seg, i) => {
         const a = angles[i];
         const start = a.start + rot;
@@ -120,7 +129,6 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
           ctx.stroke();
         }
 
-        // seat circle + mult label
         const sx = CX + Math.cos(-mid) * ((R_OUT + R_IN) / 2);
         const sy = CY + Math.sin(-mid) * ((R_OUT + R_IN) / 2);
         ctx.beginPath();
@@ -137,7 +145,6 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
         ctx.fillText(seg.label, sx, sy);
       });
 
-      // center pot card
       ctx.fillStyle = "rgba(15, 23, 20, 0.92)";
       roundRect(ctx, CX - 70, CY - 70, 140, 44, 8);
       ctx.fill();
@@ -147,15 +154,13 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
       ctx.stroke();
 
       ctx.fillStyle = "#4ade80";
-      ctx.font = "bold 16px monospace";
+      ctx.font = "bold 15px monospace";
       ctx.textAlign = "center";
       ctx.fillText(potText, CX, CY - 48);
 
-      // chest
       ctx.font = "36px serif";
       ctx.fillText("🧰", CX + 78, CY - 42);
 
-      // green GO / spin well
       ctx.beginPath();
       ctx.arc(CX, CY + 8, 36, 0, Math.PI * 2);
       ctx.fillStyle = "#16a34a";
@@ -167,7 +172,6 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
       ctx.font = "bold 12px monospace";
       ctx.fillText(phase === "spinning" ? "…" : "GO", CX, CY + 12);
 
-      // pointer
       ctx.beginPath();
       ctx.moveTo(CX, CY - R_OUT - 14);
       ctx.lineTo(CX - 12, CY - R_OUT + 6);
@@ -192,22 +196,39 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
     };
   }, []);
 
-  const placeBet = () => {
+  const placeBet = async () => {
     if (!selected || phase !== "lobby") return;
-    setPhase("countdown");
-    setCountdown(3);
-    let n = 3;
-    const t = window.setInterval(() => {
-      n -= 1;
-      setCountdown(n);
-      if (n <= 0) {
-        window.clearInterval(t);
-        runSpin();
-      }
-    }, 650);
+    setError(null);
+    if (betSats < 100) {
+      setError("MIN BET 100 SATS");
+      return;
+    }
+    try {
+      const result = await mockPaymentClient.insertCoin({
+        gameId: session.gameId,
+        costSats: betSats,
+        playerId: getPlayerId(),
+      });
+      setBalance(result.remainingSats);
+      setActiveStake(betSats);
+      window.dispatchEvent(new Event("coinup:balance"));
+      setPhase("countdown");
+      setCountdown(3);
+      let n = 3;
+      const t = window.setInterval(() => {
+        n -= 1;
+        setCountdown(n);
+        if (n <= 0) {
+          window.clearInterval(t);
+          runSpin(betSats);
+        }
+      }, 650);
+    } catch (e) {
+      setError(e instanceof Error ? e.message.toUpperCase() : "BET FAILED");
+    }
   };
 
-  const runSpin = () => {
+  const runSpin = (stake: number) => {
     setPhase("spinning");
     const winIndex = pickWeightedIndex();
     const winSeg = WHEEL_SEGMENTS[winIndex];
@@ -220,52 +241,77 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
     }
     const duration = 3000;
     const t0 = performance.now();
+    const potText = formatSatsShort(
+      stake * (WHEEL_SEGMENTS.find((s) => s.id === selected)?.mult ?? 1),
+    );
 
     const tick = (now: number) => {
       const u = Math.min(1, (now - t0) / duration);
       const e = 1 - (1 - u) ** 3;
       const r = startRot + (targetRot - startRot) * e;
       setRotation(r);
-      draw(r, selected, formatSatsShort(potPreview));
+      draw(r, selected, potText);
       if (u < 1) spinRef.current = requestAnimationFrame(tick);
-      else void finish(winSeg);
+      else void finish(winSeg, stake);
     };
     spinRef.current = requestAnimationFrame(tick);
   };
 
-  const finish = async (winSeg: WheelSegment) => {
+  const finish = async (winSeg: WheelSegment, stake: number) => {
     setLanded(winSeg);
     setPhase("result");
     const hit = winSeg.id === selected;
     setWon(hit);
     if (hit) {
-      const pay = stake * winSeg.mult * betUnits;
+      const pay = stake * winSeg.mult;
       setPayout(pay);
       try {
-        await mockPaymentClient.claimReward({
-          potId: `wheel_${session.sessionId}`,
+        const bal = await mockPaymentClient.claimReward({
+          potId: `wheel_${session.sessionId}_${Date.now()}`,
           playerId: getPlayerId(),
           amountSats: pay,
         });
+        setBalance(bal.availableSats);
         window.dispatchEvent(new Event("coinup:balance"));
       } catch {
-        /* ignore mock failures */
+        /* ignore */
       }
       onScore({
         gameId: session.gameId,
         sessionId: session.sessionId,
         score: pay,
-        meta: { mult: winSeg.mult, segment: winSeg.id, won: true },
+        meta: { mult: winSeg.mult, segment: winSeg.id, won: true, stake },
       });
     } else {
       setPayout(0);
+      await refreshBalance();
       onScore({
         gameId: session.gameId,
         sessionId: session.sessionId,
         score: 0,
-        meta: { mult: winSeg.mult, segment: winSeg.id, won: false },
+        meta: { mult: winSeg.mult, segment: winSeg.id, won: false, stake },
       });
     }
+  };
+
+  /** Stay at the wheel — next spin from wallet, no exit */
+  const playAgain = () => {
+    setPhase("lobby");
+    setLanded(null);
+    setWon(false);
+    setPayout(0);
+    setActiveStake(0);
+    setError(null);
+    // keep color selection & bet amount
+    void refreshBalance();
+  };
+
+  const adjustBet = (delta: number) => {
+    setBetSats((n) => {
+      const next = Math.max(100, Math.min(balance || n, n + delta));
+      // snap to 100
+      return Math.floor(next / 100) * 100 || 100;
+    });
   };
 
   const mm = String(Math.floor(timerLeft / 60)).padStart(2, "0");
@@ -273,7 +319,6 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
 
   return (
     <div className="cw-shell">
-      {/* Top bar */}
       <header className="cw-top">
         <h1 className="cw-title">
           CRAZY <span>WHEEL</span>
@@ -282,12 +327,12 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
           <span className="cw-timer-val">
             {mm}:{ss}
           </span>
-          <span className="cw-timer-sub">BET</span>
+          <span className="cw-timer-sub">OPEN</span>
         </div>
         <div className="cw-players">
-          <p className="cw-players-h">1 ACTIVE · YOU</p>
-          <p className="cw-players-line">
-            {guest} · {formatSats(stake).toUpperCase()}
+          <p className="cw-players-h">WALLET</p>
+          <p className="cw-players-line cw-players-line--bal">
+            {formatSats(balance).toUpperCase()}
           </p>
           {selectedSeg && (
             <p className="cw-players-line" style={{ color: selectedSeg.color }}>
@@ -297,7 +342,6 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
         </div>
       </header>
 
-      {/* Stage */}
       <div className="cw-stage">
         <canvas ref={canvasRef} width={W} height={H} className="cw-canvas" />
         {phase === "countdown" && (
@@ -307,77 +351,102 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
         )}
       </div>
 
-      {/* Segment pick chips (map to arc colors) */}
       {phase === "lobby" && (
-        <div className="cw-chips">
-          {WHEEL_SEGMENTS.map((seg) => (
-            <button
-              key={seg.id}
-              type="button"
-              className={`cw-chip${selected === seg.id ? " cw-chip--on" : ""}`}
-              style={{ background: seg.color }}
-              onClick={() => setSelected(seg.id)}
-            >
-              {seg.label}
-            </button>
-          ))}
-        </div>
+        <>
+          <div className="cw-chips">
+            {WHEEL_SEGMENTS.map((seg) => (
+              <button
+                key={seg.id}
+                type="button"
+                className={`cw-chip${selected === seg.id ? " cw-chip--on" : ""}`}
+                style={{ background: seg.color }}
+                onClick={() => setSelected(seg.id)}
+              >
+                {seg.label}
+              </button>
+            ))}
+          </div>
+          <div className="cw-presets">
+            {BET_PRESETS.map((amt) => (
+              <button
+                key={amt}
+                type="button"
+                className={`cw-preset${betSats === amt ? " cw-preset--on" : ""}`}
+                disabled={balance < amt}
+                onClick={() => setBetSats(amt)}
+              >
+                {amt >= 1000 ? `${amt / 1000}k` : amt}
+              </button>
+            ))}
+          </div>
+        </>
       )}
+
+      {error && <p className="cw-error">{error}</p>}
 
       {phase === "result" && landed && (
         <div className={`cw-result${won ? " cw-result--win" : ""}`}>
           <p className="cw-result-title">{won ? "YOU WIN" : "NO HIT"}</p>
           <p style={{ color: landed.color }}>
             LANDED {landed.label.toUpperCase()}
+            {activeStake
+              ? ` · STAKE ${formatSats(activeStake).toUpperCase()}`
+              : ""}
           </p>
           {won && (
             <p className="cw-result-pay">+{formatSats(payout).toUpperCase()}</p>
           )}
+          <p className="cw-result-bal">
+            BALANCE {formatSats(balance).toUpperCase()}
+          </p>
         </div>
       )}
 
-      {/* Bottom bet bar — product layout */}
       <footer className="cw-bar">
         <div className="cw-user">
           <span className="cw-avatar">₿</span>
           <div>
             <p className="cw-user-name">{guest}</p>
-            <p className="cw-user-bal">{formatSats(stake).toUpperCase()} STAKE</p>
+            <p className="cw-user-bal">{formatSats(balance).toUpperCase()}</p>
           </div>
         </div>
 
-        <div className="cw-bet-ctrl">
-          <button
-            type="button"
-            className="cw-step"
-            disabled={phase !== "lobby" || betUnits <= 1}
-            onClick={() => setBetUnits((n) => Math.max(1, n - 1))}
-          >
-            −
-          </button>
-          <span className="cw-bet-amt">{betUnits}</span>
-          <button
-            type="button"
-            className="cw-step"
-            disabled={phase !== "lobby" || betUnits >= 5}
-            onClick={() => setBetUnits((n) => Math.min(5, n + 1))}
-          >
-            +
-          </button>
-        </div>
+        {phase === "lobby" && (
+          <div className="cw-bet-ctrl">
+            <button
+              type="button"
+              className="cw-step"
+              disabled={betSats <= 100}
+              onClick={() => adjustBet(-100)}
+            >
+              −
+            </button>
+            <span className="cw-bet-amt" title="Bet in sats">
+              {formatBetLabel(betSats)}
+            </span>
+            <button
+              type="button"
+              className="cw-step"
+              disabled={betSats + 100 > balance}
+              onClick={() => adjustBet(100)}
+            >
+              +
+            </button>
+          </div>
+        )}
 
         {phase === "lobby" ? (
           <button
             type="button"
             className="cw-place"
-            disabled={!selected}
-            onClick={placeBet}
+            disabled={!selected || betSats > balance || balance < 100}
+            onClick={() => void placeBet()}
           >
-            PLACE BET
+            PLACE BET · {formatBetLabel(betSats)}
           </button>
         ) : phase === "result" ? (
-          <button type="button" className="cw-place" onClick={onExit}>
-            AGAIN
+          <button type="button" className="cw-place" onClick={playAgain}>
+            SPIN AGAIN
           </button>
         ) : (
           <button type="button" className="cw-place cw-place--wait" disabled>
@@ -391,10 +460,15 @@ export function CrazyWheel({ session, onScore, onExit }: GamePlayProps) {
       </footer>
 
       <p className="cw-brand-foot">
-        COINUP ARCADE · SATS ONLY · PLAY AT YOUR OWN RISK
+        COINUP ARCADE · BET FROM WALLET · KEEP SPINNING · PLAY AT YOUR OWN RISK
       </p>
     </div>
   );
+}
+
+function formatBetLabel(sats: number): string {
+  if (sats >= 1000) return `${(sats / 1000).toFixed(sats % 1000 === 0 ? 0 : 1)}k`;
+  return String(sats);
 }
 
 function formatSatsShort(sats: number): string {
