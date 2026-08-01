@@ -23,6 +23,7 @@ Most crypto games abstract money into points or wrapped tokens. CoinUp treats **
 - **Fair play** — verifiable scores / seeds where it matters; house rules transparent
 - **Modular cabinets** — each game is a plugin with a shared credit + score API
 - **Arcade soul** — neon, cabinets, “INSERT COIN” — not a generic DeFi dashboard
+- **Chip runs the floor** — Chip the Arcade Manager is the mascot host (not a faceless protocol UI)
 - **Build in public** — community cabinets and seasonal tournaments welcome
 
 ## Non-goals (v0)

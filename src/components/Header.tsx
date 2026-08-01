@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { formatSats, type ArcadeBalance } from "@/lib/payments";
 
@@ -12,12 +13,21 @@ export function Header({
 }) {
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 px-4 py-4 sm:px-8">
-      <Link href="/" className="group flex items-baseline gap-2">
-        <span className="font-mono text-2xl font-bold tracking-tight text-white">
-          COIN<span className="text-amber-400">UP</span>
-        </span>
-        <span className="hidden text-xs uppercase tracking-[0.2em] text-zinc-500 sm:inline group-hover:text-zinc-400">
-          Arch Arcade
+      <Link href="/" className="group flex items-center gap-2.5">
+        <Image
+          src="/images/chip-arcade-manager.png"
+          alt="Chip the Arcade Manager"
+          width={36}
+          height={36}
+          className="pixelated rounded-md"
+        />
+        <span className="flex items-baseline gap-2">
+          <span className="font-mono text-2xl font-bold tracking-tight text-white">
+            COIN<span className="text-amber-400">UP</span>
+          </span>
+          <span className="hidden text-xs uppercase tracking-[0.2em] text-zinc-500 sm:inline group-hover:text-zinc-400">
+            Arch Arcade
+          </span>
         </span>
       </Link>
       <div className="flex items-center gap-3">

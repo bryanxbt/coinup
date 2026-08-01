@@ -44,3 +44,9 @@ body::before {
   background-size: 48px 48px;
   background-position: center bottom;
 }
+
+/* Keep Chip (and other pixel art) crisp when scaled */
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}

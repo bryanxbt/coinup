@@ -14,6 +14,7 @@ CoinUp is an on-chain arcade: players insert satoshis to play classic and origin
 | **Win with BTC** | High scores, tournaments, and jackpots pay out in Bitcoin |
 | **Arch-native** | Smart contract logic and settlement on Arch Network |
 | **Cabinet culture** | Retro arcade feel with modern multiplayer rails |
+| **Chip** | Floor boss — Chip the Arcade Manager greets every player |
 
 ## Stack
 
@@ -48,9 +49,13 @@ docs/                  # Vision and architecture notes
 programs/              # Future Arch Network on-chain programs
 ```
 
+## Mascot
+
+**Chip the Arcade Manager** lives in `public/images/chip-arcade-manager.png` — CRT-head robot, COINUP ARCADE hat, all-access badge. He’s the face of the lobby and brand mark in the header.
+
 ## Status
 
-Early scaffold. Lobby UI and game registry are in place. Bitcoin payment rails and Arch programs are typed stubs — ready for implementation.
+Early scaffold. Lobby UI, Chip, and game registry are in place. Bitcoin payment rails and Arch programs are typed stubs — ready for implementation.
 
 ## Links
 

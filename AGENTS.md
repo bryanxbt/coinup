@@ -8,6 +8,10 @@ Virtual Bitcoin arcade for Arch Network. Build Together Labs.
 - Tagline: Insert Bitcoin. Play. Win Bitcoin.
 - Token for play + rewards: **Bitcoin (sats)**
 - Chain: **Arch Network**
+- Mascot: **Chip the Arcade Manager** — pixel robot in COINUP ARCADE hat / varsity jacket
+  - Asset: `public/images/chip-arcade-manager.png`
+  - Component helpers: `src/components/Chip.tsx`
+  - Keep him crisp (`image-rendering: pixelated`); don’t blur or restyle into non-pixel art
 
 ## Stack conventions
 
