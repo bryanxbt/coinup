@@ -49,18 +49,29 @@ export function ArcadeShell({ children }: { children: React.ReactNode }) {
           {toast}
         </div>
       )}
-      <footer className="border-t border-white/5 px-4 py-6 text-center text-xs text-zinc-600 sm:px-8">
-        CoinUp · Bitcoin arcade on{" "}
-        <a
-          href="https://arch.network"
-          className="text-zinc-400 underline-offset-2 hover:text-zinc-300 hover:underline"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Arch Network
-        </a>
-        {" · "}
-        Build Together Labs · mock credits until mainnet rails
+      <footer className="border-t border-white/5 px-4 py-6 sm:px-8">
+        <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 text-center">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-amber-400/80">
+            COINUP ARCADE
+          </p>
+          <p className="max-w-2xl font-mono text-[10px] uppercase leading-relaxed tracking-[0.12em] text-zinc-500">
+            Our mission: build the greatest digital arcade ever. All games. All
+            people. All the time.
+          </p>
+          <p className="text-xs text-zinc-600">
+            Bitcoin on{" "}
+            <a
+              href="https://arch.network"
+              className="text-zinc-400 underline-offset-2 hover:text-zinc-300 hover:underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Arch Network
+            </a>
+            {" · "}
+            Build Together Labs
+          </p>
+        </div>
       </footer>
     </div>
   );

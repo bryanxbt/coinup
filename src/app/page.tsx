@@ -1,6 +1,8 @@
+import Image from "next/image";
 import { ChipBubble, ChipPortrait } from "@/components/Chip";
 import { GameCard } from "@/components/GameCard";
 import { listLobbyGames } from "@/games/registry";
+import { BRAND, chipExpressions, colors, officialRoster } from "@/lib/brand";
 
 export default function LobbyPage() {
   const games = listLobbyGames();
@@ -10,31 +12,36 @@ export default function LobbyPage() {
   return (
     <main className="arcade-grid relative flex-1 px-4 py-10 sm:px-8">
       <div className="mx-auto max-w-5xl">
+        {/* Hero */}
         <section className="mb-14 flex flex-col items-center gap-8 sm:flex-row sm:items-end sm:justify-between sm:gap-10">
           <div className="flex-1 text-center sm:text-left">
             <p className="mb-3 font-mono text-xs uppercase tracking-[0.35em] text-amber-400/90">
-              Insert coin to continue
+              {BRAND.taglines.floor}
             </p>
-            <h1 className="mb-4 text-4xl font-bold tracking-tight text-white sm:text-5xl">
-              The Bitcoin{" "}
-              <span className="bg-gradient-to-r from-cyan-300 via-fuchsia-300 to-amber-300 bg-clip-text text-transparent">
-                arcade
-              </span>
+            <h1 className="mb-2 font-mono text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              {BRAND.forever}
             </h1>
-            <p className="mb-6 max-w-xl text-base leading-relaxed text-zinc-400">
+            <p className="mb-4 max-w-xl text-base leading-relaxed text-zinc-400">
               Virtual cabinets on{" "}
-              <span className="text-zinc-200">Arch Network</span>. Pay entry in
-              sats. Climb boards. Win Bitcoin. Managed on the floor by{" "}
+              <span className="text-zinc-200">{BRAND.chain}</span>.{" "}
+              {BRAND.taglines.product} Floor manager:{" "}
               <span className="text-cyan-300">Chip</span>.
             </p>
-            <ChipBubble className="mx-auto sm:mx-0">
-              Welcome to CoinUp. I&apos;m Chip — all-access manager. Grab
-              credits, pick a cabinet, and show me what you got.
+            <p
+              className="mb-6 max-w-xl font-mono text-[11px] uppercase leading-relaxed tracking-[0.12em]"
+              style={{ color: colors.magenta }}
+            >
+              {BRAND.mission.bar}
+            </p>
+            <ChipBubble className="mx-auto sm:mx-0" expression="hyped">
+              Welcome to {BRAND.fullName}. All access. All cabinets.{" "}
+              {BRAND.taglines.jacket}
             </ChipBubble>
           </div>
           <ChipPortrait size={260} priority className="shrink-0" />
         </section>
 
+        {/* Open cabinets */}
         <section className="mb-12">
           <h2 className="mb-4 font-mono text-xs uppercase tracking-[0.25em] text-zinc-500">
             Open cabinets · {playable.length}
@@ -46,11 +53,15 @@ export default function LobbyPage() {
           </div>
         </section>
 
+        {/* Forever roster — coming soon */}
         {soon.length > 0 && (
-          <section>
-            <h2 className="mb-4 font-mono text-xs uppercase tracking-[0.25em] text-zinc-500">
-              Coming soon · Chip is stocking these
+          <section className="mb-14">
+            <h2 className="mb-1 font-mono text-xs uppercase tracking-[0.25em] text-zinc-500">
+              Forever roster
             </h2>
+            <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-zinc-600">
+              And more coming soon…
+            </p>
             <div className="grid gap-4 sm:grid-cols-2">
               {soon.map((game) => (
                 <GameCard key={game.id} game={game} />
@@ -58,6 +69,55 @@ export default function LobbyPage() {
             </div>
           </section>
         )}
+
+        {/* Brand guide reference strip */}
+        <section className="mb-10 overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/80">
+          <div className="grid gap-0 md:grid-cols-2">
+            <div className="relative min-h-[220px] border-b border-white/10 md:border-b-0 md:border-r">
+              <Image
+                src={BRAND.assets.brandGuide}
+                alt="CoinUp brand guide concept — games, Chip expressions, gear, Day 1"
+                fill
+                className="object-cover object-top"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            </div>
+            <div className="flex flex-col justify-center gap-4 p-6 sm:p-8">
+              <p
+                className="font-mono text-[10px] uppercase tracking-[0.3em]"
+                style={{ color: colors.purple }}
+              >
+                Brand guide
+              </p>
+              <h2 className="font-mono text-lg font-bold text-white">
+                CHIP.EXE // EXPRESSIONS
+              </h2>
+              <ul className="grid grid-cols-2 gap-2 font-mono text-[11px] text-zinc-400">
+                {(
+                  Object.entries(chipExpressions) as [
+                    string,
+                    { label: string },
+                  ][]
+                ).map(([key, val]) => (
+                  <li
+                    key={key}
+                    className="rounded border border-white/10 bg-black/40 px-2 py-1.5"
+                    style={{ color: colors.crtGreen }}
+                  >
+                    {val.label}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-sm leading-relaxed text-zinc-500">
+                Full visual system — roster accents, Chip&apos;s gear, Day 1
+                origin — lives in{" "}
+                <code className="text-zinc-400">docs/BRAND.md</code> and the
+                concept board. {officialRoster.length} named cabinets on the
+                forever list.
+              </p>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   );

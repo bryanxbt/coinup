@@ -3,7 +3,7 @@ import { getGame } from "@/games/registry";
 import { PlayClient } from "./PlayClient";
 
 export function generateStaticParams() {
-  return [{ gameId: "coin-catch" }, { gameId: "stack-sats" }];
+  return [{ gameId: "coin-drop" }, { gameId: "block-stacker" }];
 }
 
 export default async function PlayPage({

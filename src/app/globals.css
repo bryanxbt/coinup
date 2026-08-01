@@ -1,11 +1,15 @@
 @import "tailwindcss";
 
+/* Tokens aligned with docs/BRAND.md */
 :root {
   --background: #07050c;
   --foreground: #f4f0ff;
   --neon-cyan: #22d3ee;
-  --neon-magenta: #e879f9;
+  --neon-magenta: #f472b6;
   --neon-amber: #fbbf24;
+  --varsity-blue: #2563eb;
+  --varsity-gold: #eab308;
+  --crt-green: #4ade80;
 }
 
 @theme inline {
