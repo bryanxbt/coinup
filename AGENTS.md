@@ -38,7 +38,7 @@ One pixel = one solid hex · no AA · no blur/glow on sprites · no gradients in
 
 ### Forever roster names only
 
-Coin Drop · Sat Hunter · Pixel Racer · Rocket Run · Orange Mines · Memory Matrix · Block Stacker · Lightning Reflex
+Coin Drop · Sat Hunter · Pixel Racer · Rocket Run · Orange Mines · Memory Matrix · Block Stacker · Rock Paper Scissors
 
 ## Stack
 
