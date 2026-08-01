@@ -38,6 +38,24 @@ Day 1 prop: blueprint blue `#1E3A5F` / cyan lines. Use in about pages, construct
 - Aisle width in art: show more than one cabinet for “floor” feel  
 - Exit signs / neon HIGH SCORE wall art encouraged  
 
+## Product UX — The Floor (canonical lobby)
+
+The **home experience is the arcade floor**, not a SaaS card grid.
+
+| Rule | Spec |
+|------|------|
+| **Primary surface** | Interactive **Cabinet Hall** — pixel carpet, aisles, wall neon |
+| **Cabinets** | Clickable machines; live → `/play/[id]`; soon → status only (WIP tape) |
+| **Layout source** | `src/lib/arcade-floor.ts` (`FLOOR_SLOTS` col/row map) |
+| **Component** | `ArcadeFloor` + `PixelCabinet` |
+| **Chip** | On the floor at the manager desk (not only in a hero portrait) |
+| **Status bar** | CRT green line: selection feedback (“LIVE · INSERT SATS” / “STILL WIRING”) |
+| **Legend** | LIVE vs COMING SOON counts |
+| **Do not** | Replace the floor with generic marketplace cards as the main lobby |
+
+CEO translation (internal): *“A layout of the arcade where you see a pixelated floor and click cabinets to play.”*  
+Brand translation: **walk the aisle, pick a machine, insert sats.**
+
 ## Expansion
 
-New games = new cabinets on the plan, announced as **NEW CABINET JUST ARRIVED**.
+New games = new cabinets on the plan (`FLOOR_SLOTS` + roster), announced as **NEW CABINET JUST ARRIVED**.
