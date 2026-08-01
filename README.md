@@ -51,32 +51,32 @@ programs/              # Future Arch Network on-chain programs
 
 ## Brand
 
-**Source of truth:** [`docs/BRAND.md`](docs/BRAND.md)
+CoinUp is a **living entertainment brand** (not only a product UI).
 
-The visual “brand book” is a single concept board (not a formal PDF):
-
-`public/images/brand-guide-concept.jpg`
-
-It defines the forever game roster, Chip.EXE expressions, Chip’s gear, Day 1 story, and mission lockup. Code mirrors it in `src/lib/brand.ts`.
-
-### Mascot
-
-**Chip the Arcade Manager** — `public/images/chip-arcade-manager.png`  
-CRT-head robot, COINUP ARCADE hat, all-access badge. Floor host and header mark.
+| Asset | Role |
+|-------|------|
+| **`/brand`** | Navigable Brand Book (web) |
+| **`docs/brand-book/`** | Chapters 00–25 (80–120 page target) |
+| **`public/images/brand-book-v1.jpg`** | Official visual Brand Book v1.0 |
+| **`src/lib/brand.ts`** | Colors, type, roster, values |
 
 ### Mission
 
 > Build the greatest digital arcade ever. All games. All people. All the time.
 
+### Mascot
+
+**Chip the Arcade Manager** — `public/images/chip-arcade-manager.png`
+
 ## Status
 
-Early scaffold. Brand guide, lobby, Chip, and forever roster are in place. Two playable prototypes (**Coin Drop**, **Block Stacker**). Bitcoin payment rails and Arch programs are typed stubs.
+Lobby + two playable prototypes (**Coin Drop**, **Block Stacker**) + full brand book architecture. Arch payment programs still stubs.
 
 ## Project docs
 
 | Doc | Role |
 |-----|------|
-| `docs/BRAND.md` | Brand guide |
+| `docs/brand-book/` | Living brand bible |
 | `docs/VISION.md` | Product vision |
 | `docs/ARCHITECTURE.md` | Technical shape |
 

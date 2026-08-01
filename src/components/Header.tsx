@@ -26,11 +26,17 @@ export function Header({
             COIN<span className="text-amber-400">UP</span>
           </span>
           <span className="hidden text-xs uppercase tracking-[0.2em] text-zinc-500 sm:inline group-hover:text-zinc-400">
-            Arch Arcade
+            Arcade
           </span>
         </span>
       </Link>
       <div className="flex items-center gap-3">
+        <Link
+          href="/brand"
+          className="hidden font-mono text-[10px] uppercase tracking-wider text-zinc-500 hover:text-pink-400 sm:inline"
+        >
+          Brand Book
+        </Link>
         <div className="rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-1.5 font-mono text-sm text-amber-200">
           {balance ? formatSats(balance.availableSats) : "—"}
         </div>

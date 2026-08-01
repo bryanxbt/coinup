@@ -1,15 +1,16 @@
 @import "tailwindcss";
 
-/* Tokens aligned with docs/BRAND.md */
+/* Brand Book v1.0 tokens */
 :root {
-  --background: #07050c;
-  --foreground: #f4f0ff;
-  --neon-cyan: #22d3ee;
-  --neon-magenta: #f472b6;
-  --neon-amber: #fbbf24;
-  --varsity-blue: #2563eb;
-  --varsity-gold: #eab308;
-  --crt-green: #4ade80;
+  --background: #000012;
+  --foreground: #ffffff;
+  --neon-cyan: #00d0ff;
+  --neon-magenta: #ff4ec7;
+  --neon-amber: #fcc76e;
+  --varsity-blue: #2962ff;
+  --varsity-gold: #fcc76e;
+  --crt-green: #00de76;
+  --orange: #ff5a00;
 }
 
 @theme inline {

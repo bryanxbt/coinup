@@ -1,48 +1,49 @@
 # CoinUp — agent notes
 
-Virtual Bitcoin arcade for Arch Network. Build Together Labs.
+Living entertainment brand: Bitcoin arcade on Arch Network. Build Together Labs.
 
 ## Product
 
-- Brand: **CoinUp** / **CoinUp Arcade** (never Archade)
-- **Brand guide (source of truth):** `docs/BRAND.md`
-- **Visual brand board:** `public/images/brand-guide-concept.jpg` (treat as brand book even though it’s a single concept graphic)
-- Code tokens: `src/lib/brand.ts`
-- Taglines: see brand guide — product = *Insert Bitcoin. Play. Win Bitcoin.*; floor = *Insert coin to continue.*
+- **CoinUp / CoinUp Arcade** (never Archade)
+- Domain: coinuparcade.com
+- Tagline site: *The Internet's Bitcoin Arcade*
 - Mission: *Build the greatest digital arcade ever. All games. All people. All the time.*
-- Token for play + rewards: **Bitcoin (sats)**
-- Chain: **Arch Network**
+- Currency: Bitcoin (sats) · Chain: Arch Network
 - Mascot: **Chip the Arcade Manager**
-  - Hero: `public/images/chip-arcade-manager.png`
-  - Helpers: `src/components/Chip.tsx`
-  - Expressions: thinking / hyped / determined / sleep (ERROR 404: SLEEP)
-  - Keep pixel-crisp; blue + gold varsity; don’t invent a second mascot
 
-## Game naming
+## Brand system (read first)
 
-Official forever roster (only these titles for the announced lineup):
+| Priority | Asset |
+|----------|--------|
+| 1 | `public/images/brand-book-v1.jpg` — official visual brand book |
+| 2 | `docs/brand-book/` — full chapter bible (00–25) |
+| 3 | Web edition `/brand` |
+| 4 | `src/lib/brand.ts` — tokens (must match v1 palette) |
+| 5 | `public/images/chip-arcade-manager.png` |
+
+Flagship chapters: **03 World**, **07 Pixel System**, **08 Chip Bible**.
+
+### Brand Book v1 palette (primary)
+
+`#FCC76E` gold · `#FF5A00` orange · `#2962FF` blue · `#FF4EC7` pink · `#00DE76` green  
+Dark UI void: `#000012`
+
+### Type
+
+Display: Coinup Pixel · Subhead/UI: Press Start 2P · Body: Inter
+
+### Pixel law (non-negotiable)
+
+One pixel = one solid hex · no AA · no blur/glow on sprites · no gradients in pixel art · nearest-neighbor scale · sizes 16/32/64/128 (+ 24/48)
+
+### Forever roster names only
 
 Coin Drop · Sat Hunter · Pixel Racer · Rocket Run · Orange Mines · Memory Matrix · Block Stacker · Lightning Reflex
 
-Map prototypes onto these IDs (`coin-drop`, `block-stacker`, …). Don’t ship parallel names (e.g. “Coin Catch” vs “Coin Drop”).
+## Stack
 
-## Stack conventions
+Next.js App Router, TypeScript, Tailwind · games in `src/games/` · payments integer sats · programs later in `programs/`
 
-- Next.js App Router, TypeScript, Tailwind
-- Games in `src/games/` via `registry.ts`
-- Payments in `src/lib/payments/` — integer sats only
-- Docs in `docs/`; on-chain in `programs/`
+## Don't
 
-## Do
-
-- When brand is ambiguous, match `docs/BRAND.md` + the concept board
-- Keep arcade / neon / cabinet aesthetic
-- Modular game plugins
-- Mock credits until Arch programs are wired
-
-## Don’t
-
-- Rename the product to Archade
-- Non-BTC primary currencies without an explicit product decision
-- Soften Chip into non-pixel corporate art without a deliberate art pass
-- Commit secrets, keys, or funded mnemonics
+- Archade rename · non-BTC primary currency · second pixel palette · blur Chip · commit secrets

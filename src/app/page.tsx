@@ -2,6 +2,7 @@ import Image from "next/image";
 import { ChipBubble, ChipPortrait } from "@/components/Chip";
 import { GameCard } from "@/components/GameCard";
 import { listLobbyGames } from "@/games/registry";
+import Link from "next/link";
 import { BRAND, chipExpressions, colors, officialRoster } from "@/lib/brand";
 
 export default function LobbyPage() {
@@ -75,8 +76,8 @@ export default function LobbyPage() {
           <div className="grid gap-0 md:grid-cols-2">
             <div className="relative min-h-[220px] border-b border-white/10 md:border-b-0 md:border-r">
               <Image
-                src={BRAND.assets.brandGuide}
-                alt="CoinUp brand guide concept — games, Chip expressions, gear, Day 1"
+                src={BRAND.assets.brandBookV1}
+                alt="CoinUp Brand Book v1.0"
                 fill
                 className="object-cover object-top"
                 sizes="(max-width: 768px) 100vw, 50vw"
@@ -109,12 +110,16 @@ export default function LobbyPage() {
                 ))}
               </ul>
               <p className="text-sm leading-relaxed text-zinc-500">
-                Full visual system — roster accents, Chip&apos;s gear, Day 1
-                origin — lives in{" "}
-                <code className="text-zinc-400">docs/BRAND.md</code> and the
-                concept board. {officialRoster.length} named cabinets on the
-                forever list.
+                Full living brand book (80–120 page target): mission, pixel
+                system, Chip bible, cabinets, merch, social.{" "}
+                {officialRoster.length} named cabinets on the forever list.
               </p>
+              <Link
+                href="/brand"
+                className="inline-flex w-fit rounded-full bg-gradient-to-r from-orange-500 to-pink-500 px-4 py-2 font-mono text-xs font-bold text-white"
+              >
+                OPEN BRAND BOOK →
+              </Link>
             </div>
           </div>
         </section>
