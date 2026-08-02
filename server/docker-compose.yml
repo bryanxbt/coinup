@@ -1,0 +1,25 @@
+# Optional local Postgres for Card Room ledger (PR 2+).
+# Redis is optional — leave REDIS_URL unset for in-process fanout.
+#
+#   cd server && docker compose up -d
+#   export DATABASE_URL=postgres://coinup:coinup@127.0.0.1:5433/coinup_card_room
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: coinup
+      POSTGRES_PASSWORD: coinup
+      POSTGRES_DB: coinup_card_room
+    volumes:
+      - cr_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U coinup -d coinup_card_room"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  cr_pg_data:

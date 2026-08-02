@@ -7,15 +7,24 @@ import type {
   ScoreSubmission,
   Sats,
 } from "./types";
+import { formatSats } from "./sats";
 
 const STORAGE_KEY = "coinup.mock.balance.v1";
 const DEFAULT_STARTING_SATS: Sats = 50_000; // 0.0005 BTC — demo pocket change
+
+function autoIdempotencyKey(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `mock_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+}
 
 function readBalance(): ArcadeBalance {
   if (typeof window === "undefined") {
     return {
       availableSats: DEFAULT_STARTING_SATS,
       lockedSats: 0,
+      lockedDetail: { tableSats: 0, tournamentSats: 0, backingSats: 0 },
       network: "mock",
     };
   }
@@ -24,12 +33,24 @@ function readBalance(): ArcadeBalance {
     const initial: ArcadeBalance = {
       availableSats: DEFAULT_STARTING_SATS,
       lockedSats: 0,
+      lockedDetail: { tableSats: 0, tournamentSats: 0, backingSats: 0 },
       network: "mock",
     };
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
     return initial;
   }
-  return JSON.parse(raw) as ArcadeBalance;
+  const parsed = JSON.parse(raw) as ArcadeBalance;
+  if (!parsed.lockedDetail) {
+    parsed.lockedDetail = {
+      tableSats: 0,
+      tournamentSats: 0,
+      backingSats: 0,
+    };
+  }
+  if (typeof parsed.lockedSats !== "number") {
+    parsed.lockedSats = 0;
+  }
+  return parsed;
 }
 
 function writeBalance(balance: ArcadeBalance): ArcadeBalance {
@@ -43,7 +64,10 @@ function sessionId(): string {
   return `sess_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-/** Browser-local sat credits for UI and game development. */
+/**
+ * Floor 1 browser-local sat credits.
+ * Not multi-party safe — Card Room uses server ledger via browser-client.ts.
+ */
 export const mockPaymentClient: PaymentClient = {
   network: "mock",
 
@@ -52,12 +76,15 @@ export const mockPaymentClient: PaymentClient = {
   },
 
   async deposit(req: DepositRequest) {
+    void req.idempotencyKey; // optional Floor 1; no server dedupe
     const bal = readBalance();
     bal.availableSats += req.amountSats;
     return writeBalance(bal);
   },
 
   async insertCoin(req: InsertCoinRequest): Promise<InsertCoinResult> {
+    const key = req.idempotencyKey ?? autoIdempotencyKey();
+    void key;
     const bal = readBalance();
     if (bal.availableSats < req.costSats) {
       throw new Error("Not enough sats — insert more coin.");
@@ -72,7 +99,6 @@ export const mockPaymentClient: PaymentClient = {
   },
 
   async submitScore(_sub: ScoreSubmission) {
-    // Mock accepts all scores; Arch path will verify / rank.
     return { accepted: true, txRef: `mock_score_${Date.now()}` };
   },
 
@@ -93,9 +119,4 @@ export const mockPaymentClient: PaymentClient = {
   },
 };
 
-export function formatSats(sats: Sats): string {
-  if (sats >= 100_000_000) {
-    return `${(sats / 100_000_000).toFixed(4)} BTC`;
-  }
-  return `${sats.toLocaleString()} sats`;
-}
+export { formatSats };

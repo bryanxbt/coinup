@@ -27,10 +27,26 @@ CoinUp is an on-chain arcade: players insert satoshis to play classic and origin
 
 ```bash
 npm install
-npm run dev
+npm run dev          # Floor 1 + Card Room UI (Next)
+# Optional parallel API:
+npm run dev:api      # Card Room backend :8787
+# Or both (API backgrounded):
+npm run dev:all
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) (arcade main floor) and  
+[http://localhost:3000/card-room](http://localhost:3000/card-room) (**The Pit** — Card Room).
+
+### Live preview (GitHub Pages)
+
+| Surface | URL |
+|---------|-----|
+| Arcade | https://bryanxbt.github.io/coinup/ |
+| **Card Room / The Pit** | https://bryanxbt.github.io/coinup/card-room/ |
+
+Static UI only on Pages. Live tables/ledger need the Card Room API (`server/`) elsewhere for full play; UI still loads for browsing.
+
+**Local Arch Network** (Bitcoin regtest + Titan + local_validator): see [`docs/LOCAL_ARCH.md`](docs/LOCAL_ARCH.md).
 
 ```bash
 npm run build
@@ -41,12 +57,16 @@ npm start
 
 ```
 src/
-  app/                 # Next.js routes (lobby + play)
-  components/          # Arcade UI shell
-  games/               # Game registry + individual games
-  lib/payments/        # BTC credit / reward types and Arch stubs
-docs/                  # Vision and architecture notes
-programs/              # Future Arch Network on-chain programs
+  app/
+    (arcade)/          # Floor 1 Cabinet Hall routes
+    (card-room)/       # Floor 2 Card Room UI
+  components/          # ArcadeShell + CardRoomShell
+  games/               # Floor 1 game registry
+  lib/payments/        # Sats types, mock + Arch stubs
+  lib/card-room/       # Floor 2 brand tokens
+server/                # Card Room API (ledger, agents, tables — dual-deploy)
+docs/                  # Vision, architecture, Card Room design, local Arch
+programs/              # Arch Network on-chain programs (scaffold)
 ```
 
 ## Brand
@@ -70,7 +90,7 @@ CoinUp is a **living entertainment brand** (not only a product UI).
 
 ## Status
 
-Lobby + two playable prototypes (**Coin Drop**, **Block Stacker**) + full brand book architecture. Arch payment programs still stubs.
+Lobby + playable cabinets + full Floor 1 brand book. **Floor 2 Card Room** shell + dual-deploy API skeleton + local Arch docs. Server ledger / engine / Arch programs still building out (see `docs/CARD_ROOM_DESIGN.md`).
 
 ## Project docs
 

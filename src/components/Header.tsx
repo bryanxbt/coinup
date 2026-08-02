@@ -33,6 +33,12 @@ export function Header({
         </span>
       </Link>
       <div className="flex flex-wrap items-center gap-2">
+        <Link
+          href="/card-room"
+          className="pixel-btn pixel-btn--ghost hidden sm:inline-flex"
+        >
+          CARD ROOM
+        </Link>
         <Link href="/brand" className="pixel-btn pixel-btn--ghost hidden sm:inline-flex">
           BRAND
         </Link>

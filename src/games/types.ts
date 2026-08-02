@@ -1,7 +1,8 @@
 import type { ComponentType } from "react";
+import type { Sats } from "@/lib/payments/sats";
 
 /** Cost and rewards always in integer satoshis. */
-export type Sats = number;
+export type { Sats };
 
 export type GameStatus = "playable" | "coming_soon" | "maintenance";
 

@@ -3,58 +3,99 @@
 ## High-level
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│  CoinUp Web (Next.js)                                   │
-│  Lobby · Cabinets · Wallet UI · Leaderboards            │
-└───────────────┬─────────────────────────┬───────────────┘
-                │                         │
-                ▼                         ▼
-        Game modules                 Payment client
-     (registry + engines)         (sats credits API)
-                │                         │
-                └────────────┬────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│  CoinUp Web (Next.js, static export OK)                     │
+│  Floor 1 Cabinet Hall · Floor 2 Card Room UI                │
+└───────────────┬─────────────────────────────┬───────────────┘
+                │                             │ HTTPS/WSS + Bearer
+                ▼                             ▼
+        Game modules                    card-room-api (server/)
+     (Floor 1 registry)                 ledger · auth · agents · tables
+                │                             │
+                └────────────┬────────────────┘
                              ▼
-                   Arch Network programs
-              (deposit · play · score · payout)
-                             │
-                             ▼
-                      Bitcoin settlement
+                   Arch Network (localnet → testnet → mainnet)
+                   Bitcoin UTXO settlement (integer sats)
 ```
 
-## Frontend
+## Dual-deploy (locked)
 
-- **Lobby** (`/`) — catalog of cabinets, balance, featured pots
-- **Play** (`/play/[gameId]`) — mounts a registered game with a credit session
-- **Games** — each cabinet implements a small interface (`GameModule`):
-  - metadata (title, cost in sats, tags)
-  - React mount surface
-  - optional score submit hook
+| Surface | Host | Notes |
+|---------|------|--------|
+| Web | GitHub Pages / static | `output: "export"` in `next.config.ts` |
+| Card Room API | Node process (`server/`) | Postgres required for ledger; Redis optional |
+| Arch | local_validator / testnet | See `docs/LOCAL_ARCH.md` |
+
+Floor 1 may keep browser mock credits during transition. Floor 2 money ops **must** go through the server ledger (PR 2+). **No second balance key** — sats only.
+
+## Frontend routes
+
+| Path | Floor | Shell |
+|------|-------|--------|
+| `/` | 1 Cabinet Hall | `ArcadeShell` via `(arcade)/layout.tsx` |
+| `/play/[gameId]` | 1 | ArcadeShell |
+| `/brand` | 1 brand book | ArcadeShell |
+| `/card-room/*` | 2 Card Room | `CardRoomShell` via `(card-room)/layout.tsx` |
+
+Root `layout.tsx` is chrome-free so Floor 2 never inherits CRT/neon.
+
+## Card Room API (`server/`)
+
+| Endpoint | Role |
+|----------|------|
+| `GET /health` | Liveness |
+| `GET /v1/status` | Arch probe + mode |
+| `GET /v1/ready` | Readiness |
+| Later | Auth, ledger, agents, tables, WS |
+
+Default: `http://127.0.0.1:8787`
+
+Env: `server/.env.example`, root `.env.example` for `NEXT_PUBLIC_CR_*`.
 
 ## Payments (target model)
 
 | Action | Description |
 |--------|-------------|
 | `deposit` | Player locks BTC/sats into arcade credits |
-| `insertCoin` | Debit credits for a play session |
-| `submitScore` | Commit run result (hash / proof as design matures) |
-| `claimReward` | Pay tournament / jackpot winners |
-| `withdraw` | Credits → player Bitcoin |
+| `insertCoin` | Floor 1: debit credits for a play session |
+| `buyIn` / `cashOutTable` | Floor 2 table stacks (server ledger) |
+| `tournamentEntry` / `claim` | Floor 2 events |
+| `lockBacking` / `release` | V1.1+ confidence product |
+| `withdraw` | Credits → player Bitcoin (wallet bind required) |
 
-v0 uses **mock credits** in the browser so UX and games can ship before mainnet programs land. Types live in `src/lib/payments/`.
+v0 Floor 1 uses **mock credits** in the browser (`src/lib/payments/mock.ts`).  
+Floor 2 uses server authority — see `docs/CARD_ROOM_DESIGN.md`.
 
 ## On-chain (planned)
 
-`programs/` will hold Arch eBPF / Rust programs for:
+`programs/` will hold Arch Rust programs for:
 
 - Arcade treasury / credit ledger
-- Per-game pot configuration
-- Score escrow and payout rules
+- Card Room pots + escrow
+- Settlement instruction map (design doc Arch Spec v0)
 
-Exact account model TBD against current Arch SDK docs.
+Exact account model TBD against Arch SDK — ledger is source of truth until programs land.
 
-## Extending with a new game
+## Local development
+
+Full Arch walkthrough: **`docs/LOCAL_ARCH.md`**.
+
+```bash
+colima start
+source /Volumes/BryanXBTLacie/archie/scripts/env.sh
+bash /Volumes/BryanXBTLacie/archie/scripts/start-local-devnet.sh
+npm run dev:all
+```
+
+## Extending Floor 1 games
 
 1. Add a folder under `src/games/<id>/`
 2. Implement `GameModule` and export from `registry.ts`
 3. Set `costSats`, art, and controls
 4. Wire score → `submitScore` when the run ends
+
+## Design source of truth
+
+- Floor 2 product/system: `docs/CARD_ROOM_DESIGN.md`
+- Brand books: `docs/brand-book/` (+ Jack / Floor 2 amendments)
+- Visual Floor 1: `public/images/brand-book-v1.jpg`

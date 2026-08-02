@@ -4,8 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:api": "npm run dev --prefix server",
+    "dev:all": "npm run dev:api & npm run dev",
     "build": "next build",
+    "build:api": "npm run typecheck --prefix server",
     "start": "next start",
+    "start:api": "npm run start --prefix server",
     "lint": "eslint"
   },
   "dependencies": {

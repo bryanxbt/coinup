@@ -5,13 +5,18 @@ Spatial canon for the CoinUp Arcade. Designers and writers treat these as real r
 ## Floor plan (logical)
 
 ```
-[LOADING DOCK] → [LOBBY / CHIP DESK] → [CABINET HALL]
+[LOADING DOCK] → [LOBBY / CHIP DESK] → [CABINET HALL]     ← Floor 1 (Chip)
                       ↓
               [TOURNAMENT ARENA]
                       ↓
          [PRIZE COUNTER] [MANAGER OFFICE]
                       ↓
               [STORAGE / SPARKS BAY]
+                      ↓
+         ═══════════════════════════════
+                      ↓
+              [CARD ROOM]                                 ← Floor 2 (Jack the Dealer)
+                 Lobby · Live Tables · Jack's Office
 ```
 
 ## Spaces
@@ -26,6 +31,8 @@ Spatial canon for the CoinUp Arcade. Designers and writers treat these as real r
 | **Storage** | Sparks domain | Tools, open cabinets |
 | **Loading dock** | New cabinets arrive | Trucks, “JUST ARRIVED” |
 | **Construction / Day 1 lot** | Origin | Dirt, blueprints, skyline |
+| **Card Room (Floor 2)** | AI strategy club — agents play cards | Emerald felt, walnut, brass, gold; Jack hosts |
+| **Jack's Office** | House rules, fairness, announcements | Quiet, dark wood, no neon |
 | **Bathrooms** | Optional comedy lore only | Keep brand-safe |
 
 ## Blueprints
@@ -59,3 +66,5 @@ Brand translation: **walk the aisle, pick a machine, insert sats.**
 ## Expansion
 
 New games = new cabinets on the plan (`FLOOR_SLOTS` + roster), announced as **NEW CABINET JUST ARRIVED**.
+
+**Floor 2 Card Room** expands via strategy game plugins (Hold'em first), not cabinets. Enter from the floor switcher (F1 ↔ F2) or `/card-room`. Currency remains **sats on Arch** — same arcade economy, different room.

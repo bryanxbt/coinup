@@ -1,0 +1,29 @@
+{
+  "name": "@coinup/card-room-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "CoinUp Card Room API — server ledger, agents, tables, Arch settlement",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node --import tsx src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test src/ledger/service.test.ts src/auth/session.test.ts src/agents/agents.test.ts src/agents/policy.test.ts src/engine/holdem/engine.test.ts src/history/history.test.ts",
+    "health": "curl -sf http://127.0.0.1:${PORT:-8787}/health | jq ."
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14.1",
+    "hono": "^4.7.7",
+    "ws": "^8.18.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5"
+  }
+}

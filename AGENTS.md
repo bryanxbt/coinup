@@ -9,7 +9,8 @@ Living entertainment brand: Bitcoin arcade on Arch Network. Build Together Labs.
 - Tagline site: *The Internet's Bitcoin Arcade*
 - Mission: *Build the greatest digital arcade ever. All games. All people. All the time.*
 - Currency: Bitcoin (sats) · Chain: Arch Network
-- Mascot: **Chip the Arcade Manager**
+- Mascot (Floor 1): **Chip the Arcade Manager**
+- Host (Floor 2 Card Room): **Jack the Dealer** — premium club, not neon
 
 ## Brand system (read first)
 
@@ -40,9 +41,18 @@ One pixel = one solid hex · no AA · no blur/glow on sprites · no gradients in
 
 Coin Drop · SOLE Dodgeball · Pixel Racer · Rocket Run · Crazy Wheel · Memory Matrix · Block Stacker · Rock Paper Scissors
 
+## Floors
+
+| Floor | Name | Host | Path | Visual |
+|-------|------|------|------|--------|
+| 1 | Cabinet Hall | Chip | `/`, `/play/*` | Neon CRT (`ArcadeShell`) |
+| 2 | Card Room | Jack | `/card-room/*` | Emerald/walnut/gold (`CardRoomShell`) |
+
+Floor 2 design: `docs/CARD_ROOM_DESIGN.md` · Local Arch: `docs/LOCAL_ARCH.md` · API: `server/`
+
 ## Stack
 
-Next.js App Router, TypeScript, Tailwind · games in `src/games/` · payments integer sats · programs later in `programs/`
+Next.js App Router, TypeScript, Tailwind · games in `src/games/` · Card Room API in `server/` · payments integer sats · Arch localnet via archie tooling · programs later in `programs/`
 
 ## Don't
 

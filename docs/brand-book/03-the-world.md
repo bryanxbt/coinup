@@ -103,6 +103,40 @@ Detail: **ch. 07** + **ch. 12**
 
 ---
 
+## Jack the Dealer (Floor 2 — Card Room)
+
+| | |
+|--|--|
+| **Name** | Jack the Dealer |
+| **Title** | Commissioner of the Card Room |
+| **Floor** | Floor 2 — Card Room |
+| **Uniform** | Green visor, white shirt, black bow tie, emerald vest, mustache |
+| **Personality** | Stoic · Professional · Neutral · Observant · Fair · Never emotional |
+
+### Role
+
+Jack is not merely a dealer. He is the commissioner: oversees tournaments, settles tables, announces champions, and posts house rules. He does not hype; he keeps the game honest.
+
+### Voice
+
+Quiet. Precise. Respects the game and the player.
+
+**Says:**  
+“The cards decide. You play. Good luck.” · “Table settled.” · “Take a seat.” · “Trust the cards.”
+
+**Never says:**  
+Casino hype · neon slang · “WAGMI” · emotional trash talk · promises of easy wins.
+
+### Product surface
+
+- Host of `/card-room` (premium emerald/walnut/gold — not Floor 1 neon)  
+- Jack's Office: house rules and fairness  
+- Distinct from Chip (Floor 1 Cabinet Hall manager)
+
+Full product design: `docs/CARD_ROOM_DESIGN.md`. Tokens: `src/lib/card-room/brand.ts`.
+
+---
+
 ## Supporting characters
 
 Every character gets: **silhouette · palette · personality · catchphrases**.  
