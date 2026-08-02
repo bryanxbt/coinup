@@ -8,6 +8,7 @@ import {
   type OfficeRules,
 } from "@/lib/card-room/history-client";
 import { withBase } from "@/lib/paths";
+import { JackPortrait } from "@/components/card-room/JackPortrait";
 
 export default function JacksOfficePage() {
   const [rules, setRules] = useState<OfficeRules | null>(null);
@@ -23,18 +24,21 @@ export default function JacksOfficePage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
-      <div>
-        <p className="cr-eyebrow">Card Room</p>
-        <h1 className="cr-display mt-1 text-3xl text-[var(--cr-ivory)]">
-          Jack&apos;s Office
-        </h1>
+      <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="cr-eyebrow">Card Room</p>
+          <h1 className="cr-wordmark mt-1 text-3xl sm:text-4xl">
+            Jack&apos;s Office
+          </h1>
+        </div>
+        <JackPortrait size={140} />
       </div>
 
       <blockquote className="border-l-2 border-[var(--cr-brass)] pl-5">
-        <p className="cr-display text-xl text-[var(--cr-brass)]">
+        <p className="cr-quote text-xl text-[var(--cr-brass)]">
           “{CARD_ROOM.jack.quote}”
         </p>
-        <footer className="mt-2 text-sm text-[var(--cr-ivory)]/55">
+        <footer className="cr-ui mt-2 text-[var(--cr-ivory)]/55">
           — {CARD_ROOM.jack.name}, {CARD_ROOM.jack.title}
         </footer>
       </blockquote>

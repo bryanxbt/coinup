@@ -114,9 +114,12 @@ function TableWatchInner() {
         potSats={payload?.engine?.potSats ?? 0}
         street={payload?.engine?.street}
         actionSeat={payload?.engine?.actionSeat}
+        tableName={payload?.name ?? "Live table"}
+        blindsLabel="Hold'em cash"
         handLabel={
           payload?.handNumber != null ? `#${payload.handNumber}` : undefined
         }
+        showActionBar
       />
 
       <p className="text-center text-xs text-[var(--cr-ivory)]/40">

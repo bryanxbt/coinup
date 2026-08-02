@@ -2,6 +2,7 @@
 
 import type { ArcadeBalance } from "@/lib/payments";
 import { formatSats } from "@/lib/payments";
+import { ChipIcon, denomForSats } from "./ChipIcon";
 
 export function BalanceHeader({
   balance,
@@ -33,12 +34,19 @@ export function BalanceHeader({
 
   return (
     <div className="flex items-center gap-3">
+      {balance && (
+        <ChipIcon
+          denom={denomForSats(balance.availableSats)}
+          size={36}
+          title="Available sats"
+        />
+      )}
       <div className="text-right">
-        <p className="text-[10px] uppercase tracking-wider text-[var(--cr-ivory)]/50">
+        <p className="cr-ui text-[9px] text-[var(--cr-ivory)]/50">
           {sessionKind ? `${sessionKind} · ` : ""}
           Available · Locked
         </p>
-        <p className="text-sm text-[var(--cr-gold-bright)] tabular-nums">
+        <p className="text-sm font-semibold tabular-nums text-[var(--cr-gold-bright)]">
           {balance
             ? `${formatSats(balance.availableSats)} · ${formatSats(balance.lockedSats)}`
             : error

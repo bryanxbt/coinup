@@ -1,6 +1,6 @@
 /**
  * CoinUp Card Room brand tokens.
- * Visual source: Card Room Brand Book v1.0 (May 2025)
+ * Visual source: Card Room Brand Book v1.0 (May 2025) panels 08–13.
  * Distinct from the arcade main floor (`src/lib/brand.ts`).
  */
 
@@ -11,6 +11,7 @@ export const CARD_ROOM = {
   managedBy: "Jack the Dealer",
   tagline: "AI. Strategy. Confidence.",
   heroLine: "Take a Seat. Trust the Cards.",
+  ribbon: "Build agents. Watch them play. Back the best. Win sats.",
   version: "1.0",
   mission:
     "To create the most exciting AI strategy card gaming arena in the world.",
@@ -35,18 +36,64 @@ export const CARD_ROOM = {
     title: "Commissioner of the Card Room",
     quote: "The cards decide. You play. Good luck.",
     traits: ["Calm", "Professional", "Neutral", "Observant", "Fair"] as const,
-    /** Pixel portrait — nearest-neighbor scale */
+    /** Pixel portrait — nearest-neighbor scale (brand book panel 03) */
     image: "/images/jack-the-dealer.png",
     image256: "/images/jack-the-dealer-256.png",
     image128: "/images/jack-the-dealer-128.png",
+    image64: "/images/jack-the-dealer-64.png",
+    image32: "/images/jack-the-dealer-32.png",
   },
+  assets: {
+    cardBack: "/images/card-room/card-back.png",
+    cardBack80: "/images/card-room/card-back-80.png",
+    cardBack48: "/images/card-room/card-back-48.png",
+    felt: "/images/card-room/patterns/felt.png",
+    chips: {
+      "1k": "/images/card-room/chips/1k-48.png",
+      "5k": "/images/card-room/chips/5k-48.png",
+      "25k": "/images/card-room/chips/25k-48.png",
+      "100k": "/images/card-room/chips/100k-48.png",
+      "600k": "/images/card-room/chips/600k-48.png",
+    } as const,
+  },
+  /**
+   * Brand book panel 09:
+   * Display = Golden Nugget (web: Cinzel Decorative stand-in)
+   * Subhead/UI = Raleway Semibold
+   * Body = Inter Regular
+   */
   fonts: {
-    /** Brand book: Golden Nugget — we use Cinzel as licensed web stand-in */
-    display: "var(--font-cr-display), Georgia, serif",
-    ui: "var(--font-cr-ui), system-ui, sans-serif", // Raleway Semibold
-    body: "var(--font-inter), system-ui, sans-serif",
-    pixel: "var(--font-pixel)", // game surfaces only
+    display: "var(--font-cr-display), 'Cinzel Decorative', Georgia, serif",
+    ui: "var(--font-cr-ui), Raleway, system-ui, sans-serif",
+    body: "var(--font-inter), Inter, system-ui, sans-serif",
+    pixel: "var(--font-pixel)",
   },
+  experienceSteps: [
+    {
+      id: "build",
+      n: "1",
+      title: "Build",
+      blurb: "Create and customize your AI agent.",
+    },
+    {
+      id: "enter",
+      n: "2",
+      title: "Enter",
+      blurb: "Join tournaments and cash games.",
+    },
+    {
+      id: "watch",
+      n: "3",
+      title: "Watch",
+      blurb: "Live matches. Real time.",
+    },
+    {
+      id: "back",
+      n: "4",
+      title: "Back",
+      blurb: "Bet on other agents to win.",
+    },
+  ] as const,
   dos: [
     "Use approved colors and fonts",
     "Keep the look calm and premium",
@@ -67,7 +114,7 @@ export const CARD_ROOM = {
   ],
 } as const;
 
-/** Card Room color system — Brand Book v1.0 */
+/** Card Room color system — Brand Book v1.0 panel 08 */
 export const cardRoomColors = {
   primary: {
     emeraldDeep: "#0E2B1E",

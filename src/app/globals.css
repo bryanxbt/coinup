@@ -1132,15 +1132,15 @@ video,
 }
 
 
-/* ---- Card Room / The Pit — Brand Book v1.0 · Golden Nugget club ---- */
+/* ---- Card Room / The Pit — Brand Book v1.0 panels 08–13 ---- */
 .card-room {
-  /* Primary */
+  /* Panel 08 primary */
   --cr-emerald-deep: #0e2b1e;
   --cr-emerald-felt: #1f4d33;
   --cr-brass: #bfa64a;
   --cr-ivory: #e8d9a6;
   --cr-near-black: #1a1a18;
-  /* Secondary */
+  /* Panel 08 secondary */
   --cr-gold-bright: #f4c542;
   --cr-success: #22c55e;
   --cr-danger: #f6686b;
@@ -1152,16 +1152,19 @@ video,
   --cr-panel: #121a14;
   --cr-line: rgba(191, 166, 74, 0.45);
   --cr-line-strong: rgba(244, 197, 66, 0.65);
+  /* Panel 10 felt texture (public/images/card-room/patterns/felt.png) */
+  --cr-felt-url: url("/images/card-room/patterns/felt.png");
 
   position: relative;
   min-height: 100%;
   flex: 1;
+  /* Panel 09 body: Inter Regular */
   color: var(--cr-ivory);
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-weight: 400;
   letter-spacing: 0.01em;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
-  /* Deep club void + subtle radial emerald wash */
   background:
     radial-gradient(ellipse 90% 60% at 50% 0%, rgba(31, 77, 51, 0.45) 0%, transparent 55%),
     radial-gradient(ellipse 70% 50% at 80% 100%, rgba(75, 30, 22, 0.25) 0%, transparent 50%),
@@ -1184,21 +1187,25 @@ video,
   z-index: 1;
 }
 
-/* —— Typography —— */
+/* —— Typography (panel 09) ——
+   Display: Golden Nugget → --font-cr-display (Cinzel Decorative)
+   Subhead/UI: Raleway Semibold → --font-cr-ui
+   Body: Inter Regular → --font-inter (default on .card-room)
+*/
 .card-room .cr-display {
-  font-family: var(--font-cr-display), "Palatino Linotype", Palatino, Georgia, serif;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-family: var(--font-cr-display), "Cinzel Decorative", Georgia, serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: none;
   color: var(--cr-brass);
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
 }
 
 .card-room .cr-display-xl {
-  font-family: var(--font-cr-display), Georgia, serif;
+  font-family: var(--font-cr-display), "Cinzel Decorative", Georgia, serif;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  line-height: 1.15;
+  letter-spacing: 0.06em;
+  line-height: 1.12;
   background: linear-gradient(180deg, #f4c542 0%, #bfa64a 45%, #8a7429 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -1206,8 +1213,30 @@ video,
   filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.5));
 }
 
+.card-room .cr-wordmark {
+  font-family: var(--font-cr-display), "Cinzel Decorative", Georgia, serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.05;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #f4c542 0%, #bfa64a 40%, #8a7429 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.55));
+}
+
+.card-room .cr-ribbon {
+  font-family: var(--font-cr-ui), Raleway, system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cr-gold-bright);
+}
+
 .card-room .cr-ui {
-  font-family: var(--font-cr-ui), var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-cr-ui), Raleway, system-ui, sans-serif;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1215,12 +1244,26 @@ video,
 }
 
 .card-room .cr-eyebrow {
-  font-family: var(--font-cr-ui), system-ui, sans-serif;
+  font-family: var(--font-cr-ui), Raleway, system-ui, sans-serif;
   font-weight: 600;
   font-size: 0.65rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--cr-brass);
+}
+
+.card-room .cr-body {
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.65;
+}
+
+.card-room .cr-quote {
+  font-family: var(--font-cr-display), "Cinzel Decorative", Georgia, serif;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: 0.02em;
 }
 
 /* —— Gold double-frame panels (brand book) —— */
@@ -1291,21 +1334,204 @@ video,
   border-width: 0 1.5px 1.5px 0;
 }
 
-/* Emerald felt surface (tables / hero) */
+/* Emerald felt surface — panel 10 felt pattern + panel 08 greens */
 .card-room .cr-felt {
   background:
-    radial-gradient(ellipse at 50% 40%, rgba(46, 110, 72, 0.55) 0%, transparent 65%),
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.03) 2px,
-      rgba(0, 0, 0, 0.03) 3px
-    ),
-    linear-gradient(160deg, #1a4a32 0%, #0e2b1e 45%, #0a1f14 100%);
+    radial-gradient(ellipse at 50% 40%, rgba(46, 110, 72, 0.4) 0%, transparent 65%),
+    linear-gradient(160deg, rgba(31, 77, 51, 0.92) 0%, rgba(14, 43, 30, 0.96) 55%, #0a1f14 100%),
+    var(--cr-felt-url);
+  background-size: auto, auto, 256px 256px;
+  background-blend-mode: normal, normal, multiply;
   box-shadow:
     inset 0 0 60px rgba(0, 0, 0, 0.45),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Jack portrait brass frame (panel 03) */
+.card-room .cr-jack-frame {
+  padding: 3px;
+  background: linear-gradient(
+    145deg,
+    rgba(244, 197, 66, 0.75) 0%,
+    rgba(191, 166, 74, 0.4) 40%,
+    rgba(138, 116, 41, 0.7) 100%
+  );
+  border-radius: 2px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+}
+.card-room .cr-jack-frame img {
+  display: block;
+  background: #0b0c0f;
+  border: 1px solid rgba(14, 43, 30, 0.9);
+}
+
+/* Playing cards (panel 10 back + panel 13 faces) */
+.card-room .cr-card {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 66px;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px rgba(191, 166, 74, 0.35);
+  vertical-align: middle;
+}
+.card-room .cr-card--sm {
+  width: 36px;
+  height: 52px;
+  border-radius: 3px;
+}
+.card-room .cr-card--lg {
+  width: 56px;
+  height: 84px;
+}
+.card-room .cr-card--face {
+  background: linear-gradient(180deg, #f7f2e8 0%, #ebe4d4 100%);
+  border: 1px solid rgba(26, 26, 24, 0.35);
+  gap: 0;
+  padding: 4px 2px;
+}
+.card-room .cr-card--face.is-red {
+  color: #b91c1c;
+}
+.card-room .cr-card--face.is-black {
+  color: #1a1a18;
+}
+.card-room .cr-card-rank {
+  font-family: var(--font-cr-ui), Raleway, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  line-height: 1;
+  letter-spacing: 0;
+}
+.card-room .cr-card--sm .cr-card-rank {
+  font-size: 0.6rem;
+}
+.card-room .cr-card-suit {
+  font-size: 1rem;
+  line-height: 1.1;
+  margin-top: 2px;
+}
+.card-room .cr-card--sm .cr-card-suit {
+  font-size: 0.85rem;
+}
+
+/* Experience step tiles (panel 04) */
+.card-room .cr-step {
+  text-align: center;
+  padding: 0.85rem 0.5rem;
+}
+.card-room .cr-step-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--cr-brass);
+  border-radius: 2px;
+  font-family: var(--font-cr-display), "Cinzel Decorative", Georgia, serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--cr-gold-bright);
+  background: rgba(14, 43, 30, 0.7);
+}
+
+/* Lobby table card (panel 11/12) */
+.card-room .cr-table-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.card-room .cr-table-card-title {
+  font-family: var(--font-cr-ui), Raleway, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cr-ivory);
+}
+.card-room .cr-btn-join {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-cr-ui), Raleway, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  border-radius: 1px;
+  border: 1px solid #166534;
+  background: linear-gradient(180deg, #22c55e 0%, #15803d 55%, #14532d 100%);
+  color: #f0fdf4;
+  padding: 0.65rem 1.2rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 2px 0 #0a3d1f,
+    0 4px 12px rgba(0, 0, 0, 0.35);
+  transition: filter 160ms ease;
+}
+.card-room .cr-btn-join:hover {
+  filter: brightness(1.08);
+}
+
+/* Table action bar (panel 13) */
+.card-room .cr-action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  padding: 0.75rem;
+  border-top: 1px solid var(--cr-line);
+  background: linear-gradient(180deg, rgba(14, 43, 30, 0.5) 0%, rgba(11, 12, 15, 0.95) 100%);
+}
+.card-room .cr-btn-fold {
+  border: 1px solid rgba(246, 104, 107, 0.55);
+  background: rgba(75, 30, 22, 0.55);
+  color: #fca5a5;
+  font-family: var(--font-cr-ui), Raleway, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.65rem 1.25rem;
+  border-radius: 1px;
+}
+.card-room .cr-btn-call,
+.card-room .cr-btn-raise {
+  font-family: var(--font-cr-ui), Raleway, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.65rem 1.25rem;
+  border-radius: 1px;
+  border: 1px solid #8a7429;
+  background: linear-gradient(180deg, #f4c542 0%, #bfa64a 55%, #9a7f2e 100%);
+  color: #0b0c0f;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 2px 0 #5c4a14;
+}
+
+/* Table chrome header (panel 13) */
+.card-room .cr-table-chrome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--cr-line);
+  background: rgba(11, 12, 15, 0.9);
+  font-family: var(--font-cr-ui), Raleway, system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cr-ivory);
 }
 
 /* Wood rail */

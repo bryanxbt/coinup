@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { usePathname } from "next/navigation";
 import { CARD_ROOM } from "@/lib/card-room/brand";
 import { FundsModeBanner, resolveFundsMode } from "./FundsModeBanner";
@@ -97,18 +97,27 @@ export function CardRoomShell({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const feltUrl = withBase("/images/card-room/patterns/felt.png");
+
   return (
-    <div className="card-room flex min-h-full flex-col">
+    <div
+      className="card-room flex min-h-full flex-col"
+      style={
+        {
+          ["--cr-felt-url"]: `url("${feltUrl}")`,
+        } as CSSProperties
+      }
+    >
       <div className="cr-header-rule" />
       <header className="cr-header">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:px-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <Link href={withBase("/card-room")} className="group min-w-0">
               <p className="cr-eyebrow">Managed by {CARD_ROOM.managedBy}</p>
-              <p className="cr-display-xl mt-1 text-xl sm:text-2xl">
+              <p className="cr-wordmark mt-1 text-xl sm:text-2xl">
                 {CARD_ROOM.name}
               </p>
-              <p className="cr-ui mt-1 text-[var(--cr-ivory)]/50">
+              <p className="cr-ribbon mt-1.5 text-[10px] sm:text-[11px]">
                 {CARD_ROOM.tagline}
               </p>
             </Link>
@@ -170,14 +179,14 @@ export function CardRoomShell({ children }: { children: React.ReactNode }) {
       <footer className="cr-footer px-4 py-8 sm:px-6">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 text-center">
           <div className="cr-divider w-48" />
-          <p className="cr-display text-base tracking-[0.12em] text-[var(--cr-brass)]">
+          <p className="cr-wordmark text-base tracking-[0.08em]">
             {CARD_ROOM.heroLine}
           </p>
-          <p className="max-w-md text-sm italic leading-relaxed text-[var(--cr-ivory)]/55">
+          <p className="cr-quote max-w-md text-sm leading-relaxed text-[var(--cr-ivory)]/55">
             “{CARD_ROOM.jack.quote}”
           </p>
           <p className="cr-ui text-[var(--cr-ivory)]/35">
-            CoinUp Card Room · {CARD_ROOM.jack.name} · Sats on Arch
+            CoinUp Card Room · Floor 2 · Managed by {CARD_ROOM.jack.name}
           </p>
         </div>
       </footer>
