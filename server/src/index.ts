@@ -116,16 +116,23 @@ app.get("/v1/ready", async (c) => {
 });
 
 app.get("/skills/card-room.md", (c) => {
-  try {
-    const here = dirname(fileURLToPath(import.meta.url));
-    const path = join(here, "../../public/skills/card-room.md");
-    const text = readFileSync(path, "utf8");
-    return c.text(text, 200, {
-      "content-type": "text/markdown; charset=utf-8",
-    });
-  } catch {
-    return c.text("# skill missing\n", 404);
+  const here = dirname(fileURLToPath(import.meta.url));
+  const candidates = [
+    join(here, "../../public/skills/card-room.md"), // monorepo: server/src → repo public/
+    join(here, "../public/skills/card-room.md"), // docker: /app/src → /app/public/
+    join(process.cwd(), "public/skills/card-room.md"),
+  ];
+  for (const path of candidates) {
+    try {
+      const text = readFileSync(path, "utf8");
+      return c.text(text, 200, {
+        "content-type": "text/markdown; charset=utf-8",
+      });
+    } catch {
+      /* try next */
+    }
   }
+  return c.text("# skill missing\n", 404);
 });
 
 mountAuthRoutes(app);

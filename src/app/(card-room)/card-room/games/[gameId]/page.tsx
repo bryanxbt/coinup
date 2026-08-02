@@ -123,20 +123,6 @@ function GameDetailInner() {
     }
   };
 
-  const onHouseThenOverview = async () => {
-    setBusy(true);
-    try {
-      const h = await ensureHouseAgent();
-      setAgentId(h.id);
-      setMsg(`House agent ready: ${h.name}`);
-      await refresh();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "house agent failed");
-    } finally {
-      setBusy(false);
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Game header — arena style, Card Room chrome */}
@@ -158,14 +144,12 @@ function GameDetailInner() {
             >
               Build an agent
             </Link>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => void onHouseThenOverview()}
-              className="cr-btn-secondary text-xs disabled:opacity-50"
+            <Link
+              href={withBase("/card-room/agents/house")}
+              className="cr-btn-secondary text-xs"
             >
               Use house agent
-            </button>
+            </Link>
             <Link
               href={withBase("/card-room")}
               className="cr-btn-secondary text-xs"

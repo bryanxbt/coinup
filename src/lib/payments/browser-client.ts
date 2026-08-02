@@ -19,15 +19,14 @@ import {
   ensureSession,
   getSessionToken,
 } from "@/lib/card-room/session";
+import { apiBaseUrl, ensureRuntimeConfig } from "@/lib/card-room/runtime-config";
 
 function apiBase(): string {
-  return (
-    process.env.NEXT_PUBLIC_CR_API_URL?.replace(/\/$/, "") ||
-    "http://127.0.0.1:8787"
-  );
+  return apiBaseUrl();
 }
 
 async function authHeaders(): Promise<Record<string, string>> {
+  await ensureRuntimeConfig();
   let token = getSessionToken();
   if (!token) {
     const s = await ensureSession();
@@ -43,6 +42,7 @@ async function jsonFetch<T>(
   path: string,
   init?: RequestInit,
 ): Promise<T> {
+  await ensureRuntimeConfig();
   const headers = await authHeaders();
   const res = await fetch(`${apiBase()}${path}`, {
     ...init,

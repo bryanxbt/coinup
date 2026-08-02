@@ -1,15 +1,8 @@
 /**
  * Card Room API config — dual-deploy friendly.
- * Money authority lives here; Next static export talks via NEXT_PUBLIC_CR_API_URL.
+ * Money authority lives here; Next static export talks via NEXT_PUBLIC_CR_API_URL
+ * or public/card-room-runtime.json.
  */
-
-function env(name: string, fallback?: string): string {
-  const v = process.env[name] ?? fallback;
-  if (v === undefined) {
-    throw new Error(`Missing required env: ${name}`);
-  }
-  return v;
-}
 
 function envInt(name: string, fallback: number): number {
   const raw = process.env[name];
@@ -19,11 +12,21 @@ function envInt(name: string, fallback: number): number {
   return n;
 }
 
+const isProd = process.env.NODE_ENV === "production";
+
+/** Default CORS: local Next + GitHub Pages origin for dual-deploy. */
+const DEFAULT_CORS =
+  "http://localhost:3000,http://127.0.0.1:3000,https://bryanxbt.github.io";
+
 export const config = {
   port: envInt("PORT", 8787),
-  host: process.env.HOST ?? "127.0.0.1",
+  /**
+   * Bind address. Production/cloud must be 0.0.0.0 so the container is reachable.
+   * Local default stays loopback.
+   */
+  host: process.env.HOST ?? (isProd ? "0.0.0.0" : "127.0.0.1"),
   /** Comma-separated exact origins (never * with Authorization). */
-  corsOrigins: (process.env.CORS_ORIGINS ?? "http://localhost:3000")
+  corsOrigins: (process.env.CORS_ORIGINS ?? DEFAULT_CORS)
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean),

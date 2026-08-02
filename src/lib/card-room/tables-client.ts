@@ -1,19 +1,13 @@
 import { ensureSession, getSessionToken } from "./session";
 import { newIdempotencyKey } from "@/lib/payments/card-room-money";
+import { apiBaseUrl, ensureRuntimeConfig, wsBaseUrl } from "./runtime-config";
 
 function apiBase(): string {
-  return (
-    process.env.NEXT_PUBLIC_CR_API_URL?.replace(/\/$/, "") ||
-    "http://127.0.0.1:8787"
-  );
+  return apiBaseUrl();
 }
 
 export function wsBase(): string {
-  const http =
-    process.env.NEXT_PUBLIC_CR_WS_URL ||
-    process.env.NEXT_PUBLIC_CR_API_URL?.replace(/\/$/, "") ||
-    "http://127.0.0.1:8787";
-  return http.replace(/^http/, "ws") + (http.includes("/ws") ? "" : "/ws");
+  return wsBaseUrl();
 }
 
 export type TableSummary = {
@@ -34,6 +28,7 @@ export type TableSummary = {
 };
 
 async function authFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  await ensureRuntimeConfig();
   await ensureSession();
   const token = getSessionToken();
   const res = await fetch(`${apiBase()}${path}`, {
@@ -54,6 +49,7 @@ async function authFetch<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export async function listTables(): Promise<TableSummary[]> {
+  await ensureRuntimeConfig();
   const res = await fetch(`${apiBase()}/v1/tables`);
   const data = (await res.json()) as { tables: TableSummary[] };
   if (!res.ok) throw new Error("list tables failed");
@@ -61,6 +57,7 @@ export async function listTables(): Promise<TableSummary[]> {
 }
 
 export async function getTable(id: string): Promise<unknown> {
+  await ensureRuntimeConfig();
   const res = await fetch(`${apiBase()}/v1/tables/${encodeURIComponent(id)}`);
   const data = await res.json();
   if (!res.ok) throw new Error("get table failed");

@@ -32,12 +32,15 @@ Floor 1 may keep browser mock credits during transition. Floor 2 money ops **mus
 
 | Path | Floor | Shell |
 |------|-------|--------|
-| `/` | 1 Cabinet Hall | `ArcadeShell` via `(arcade)/layout.tsx` |
-| `/play/[gameId]` | 1 | ArcadeShell |
-| `/brand` | 1 brand book | ArcadeShell |
-| `/card-room/*` | 2 Card Room | `CardRoomShell` via `(card-room)/layout.tsx` |
+| `/` | Landing typewriter | root only |
+| `/arcade` | Cabinet Hall | `ArcadeShell` via `(arcade)/layout.tsx` |
+| `/play/[gameId]` | Arcade cabinets | ArcadeShell |
+| `/brand` | Brand book | ArcadeShell |
+| `/card-room/*` | Card Room / The Pit | `CardRoomShell` via `(card-room)/layout.tsx` |
 
-Root `layout.tsx` is chrome-free so Floor 2 never inherits CRT/neon.
+Root `layout.tsx` is chrome-free so Card Room never inherits CRT/neon.
+
+**Production link:** UI loads `card-room-runtime.json` (or `NEXT_PUBLIC_CR_*`) for API base — see `docs/DUAL_DEPLOY.md`.
 
 ## Card Room API (`server/`)
 

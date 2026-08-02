@@ -1,8 +1,8 @@
 import { ArcadeShell } from "@/components/ArcadeShell";
 
 /**
- * Floor 1 — Cabinet Hall. Owns neon CRT chrome via ArcadeShell.
- * Card Room is a sibling route group and never mounts this layout.
+ * Arcade chrome (Cabinet Hall, brand, play) via ArcadeShell.
+ * Landing is root / (outside this group). Card Room is a sibling group.
  */
 export default function ArcadeLayout({
   children,

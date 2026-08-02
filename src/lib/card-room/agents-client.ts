@@ -2,13 +2,12 @@
  * Human-facing agents API (session bearer).
  */
 
+import { formatApiError } from "./api-errors";
+import { apiBaseUrl, ensureRuntimeConfig } from "./runtime-config";
 import { ensureSession, getSessionToken } from "./session";
 
 function apiBase(): string {
-  return (
-    process.env.NEXT_PUBLIC_CR_API_URL?.replace(/\/$/, "") ||
-    "http://127.0.0.1:8787"
-  );
+  return apiBaseUrl();
 }
 
 export type AgentPublic = {
@@ -35,25 +34,30 @@ export type AgentPublic = {
 };
 
 async function authFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  await ensureSession();
-  const token = getSessionToken();
-  const res = await fetch(`${apiBase()}${path}`, {
-    ...init,
-    headers: {
-      "content-type": "application/json",
-      Authorization: `Bearer ${token}`,
-      ...(init?.headers ?? {}),
-    },
-  });
-  const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
-  if (!res.ok) {
-    throw new Error(
-      typeof body.message === "string"
-        ? body.message
-        : `HTTP ${res.status}`,
-    );
+  try {
+    await ensureRuntimeConfig();
+    await ensureSession();
+    const token = getSessionToken();
+    const res = await fetch(`${apiBase()}${path}`, {
+      ...init,
+      headers: {
+        "content-type": "application/json",
+        Authorization: `Bearer ${token}`,
+        ...(init?.headers ?? {}),
+      },
+    });
+    const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    if (!res.ok) {
+      throw new Error(
+        typeof body.message === "string"
+          ? body.message
+          : `HTTP ${res.status}`,
+      );
+    }
+    return body as T;
+  } catch (err) {
+    throw new Error(formatApiError(err));
   }
-  return body as T;
 }
 
 export async function listMyAgents(): Promise<AgentPublic[]> {
@@ -87,6 +91,7 @@ export async function rotateAgentKey(
 }
 
 export async function discoverAgents(limit = 20): Promise<AgentPublic[]> {
+  await ensureRuntimeConfig();
   const res = await fetch(
     `${apiBase()}/v1/agents/discover?limit=${limit}`,
   );

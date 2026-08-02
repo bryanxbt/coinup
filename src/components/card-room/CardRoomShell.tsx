@@ -17,6 +17,7 @@ import {
   CR_BALANCE_EVENT,
   notifyCardRoomBalance,
 } from "@/lib/card-room/balance-events";
+import { ensureRuntimeConfig } from "@/lib/card-room/runtime-config";
 
 const NAV = [
   {
@@ -65,7 +66,10 @@ export function CardRoomShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    void refresh();
+    void (async () => {
+      await ensureRuntimeConfig();
+      await refresh();
+    })();
     const onBal = () => void refresh();
     window.addEventListener(CR_BALANCE_EVENT, onBal);
     const poll = window.setInterval(() => void refresh(), 12_000);
@@ -123,7 +127,7 @@ export function CardRoomShell({ children }: { children: React.ReactNode }) {
                 }
               />
               <Link
-                href={withBase("/")}
+                href={withBase("/arcade")}
                 className="cr-btn-secondary whitespace-nowrap px-3 py-2 text-[10px]"
                 title="Return to the arcade"
               >

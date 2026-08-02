@@ -3,6 +3,8 @@
  */
 
 import { getPlayerId } from "@/lib/player";
+import { formatApiError } from "./api-errors";
+import { apiBaseUrl, ensureRuntimeConfig } from "./runtime-config";
 
 const TOKEN_KEY = "cr_session_token";
 const PLAYER_KEY = "cr_session_player";
@@ -17,10 +19,7 @@ export type CrSession = {
 };
 
 function apiBase(): string {
-  return (
-    process.env.NEXT_PUBLIC_CR_API_URL?.replace(/\/$/, "") ||
-    "http://127.0.0.1:8787"
-  );
+  return apiBaseUrl();
 }
 
 function readStored(): { token: string; playerId: string; expiresAt: string } | null {
@@ -63,6 +62,8 @@ function storeSession(s: {
 
 /** Ensure a guest bearer session exists; reuses sessionStorage across reloads. */
 export async function ensureSession(): Promise<CrSession> {
+  await ensureRuntimeConfig();
+
   const existing = readStored();
   if (existing) {
     // Soft revalidate
@@ -91,35 +92,39 @@ export async function ensureSession(): Promise<CrSession> {
     clearSession();
   }
 
-  const guestId = getPlayerId();
-  const res = await fetch(`${apiBase()}/v1/auth/session`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ guestId }),
-  });
-  if (!res.ok) {
-    const err = (await res.json().catch(() => ({}))) as { message?: string };
-    throw new Error(err.message || `auth session failed (${res.status})`);
+  try {
+    const guestId = getPlayerId();
+    const res = await fetch(`${apiBase()}/v1/auth/session`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ guestId }),
+    });
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({}))) as { message?: string };
+      throw new Error(err.message || `auth session failed (${res.status})`);
+    }
+    const data = (await res.json()) as {
+      token: string;
+      playerId: string;
+      kind: "guest" | "wallet";
+      expiresAt: string;
+      canWithdraw: boolean;
+    };
+    storeSession({
+      token: data.token,
+      playerId: data.playerId,
+      expiresAt: data.expiresAt,
+    });
+    return {
+      token: data.token,
+      playerId: data.playerId,
+      kind: data.kind,
+      expiresAt: data.expiresAt,
+      canWithdraw: data.canWithdraw,
+    };
+  } catch (err) {
+    throw new Error(formatApiError(err, "auth session failed"));
   }
-  const data = (await res.json()) as {
-    token: string;
-    playerId: string;
-    kind: "guest" | "wallet";
-    expiresAt: string;
-    canWithdraw: boolean;
-  };
-  storeSession({
-    token: data.token,
-    playerId: data.playerId,
-    expiresAt: data.expiresAt,
-  });
-  return {
-    token: data.token,
-    playerId: data.playerId,
-    kind: data.kind,
-    expiresAt: data.expiresAt,
-    canWithdraw: data.canWithdraw,
-  };
 }
 
 export async function linkWalletStub(opts: {

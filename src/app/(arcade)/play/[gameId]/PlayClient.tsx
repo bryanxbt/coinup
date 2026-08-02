@@ -57,8 +57,8 @@ export function PlayClient({ meta }: { meta: GameMeta }) {
         <p className="font-pixel text-[10px] text-[var(--orange)]">
           CABINET NOT FOUND
         </p>
-        <Link href="/" className="pixel-link mt-4 inline-block font-pixel text-[9px]">
-          ← LOBBY
+        <Link href="/arcade" className="pixel-link mt-4 inline-block font-pixel text-[9px]">
+          ← ARCADE
         </Link>
       </main>
     );
@@ -128,8 +128,8 @@ export function PlayClient({ meta }: { meta: GameMeta }) {
               ? "ENTER WHEEL"
               : `INSERT ${formatSats(meta.costSats).toUpperCase()}`}
           </button>
-          <Link href="/" className="font-pixel text-[8px] text-[#5c5c6b] hover:text-[var(--crt-green)]">
-            ← LOBBY
+          <Link href="/arcade" className="font-pixel text-[8px] text-[#5c5c6b] hover:text-[var(--crt-green)]">
+            ← ARCADE
           </Link>
           {lastScore !== null && (
             <p className="font-pixel text-[10px] text-[var(--neon-amber)]">
@@ -151,8 +151,8 @@ export function PlayClient({ meta }: { meta: GameMeta }) {
           >
             TRY AGAIN
           </button>
-          <Link href="/" className="font-pixel text-[8px] text-[var(--neon-amber)]">
-            INSERT COIN IN LOBBY →
+          <Link href="/arcade" className="font-pixel text-[8px] text-[var(--neon-amber)]">
+            INSERT COIN IN ARCADE →
           </Link>
         </div>
       )}

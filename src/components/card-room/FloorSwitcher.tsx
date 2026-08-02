@@ -41,7 +41,7 @@ export function FloorSwitcher({ current }: { current: Floor }) {
       role="navigation"
       aria-label="Arcade floors"
     >
-      <Link href={withBase("/")} className={arcadeClass}>
+      <Link href={withBase("/arcade")} className={arcadeClass}>
         F1 Cabinet
       </Link>
       <Link href={withBase("/card-room")} className={cardClass}>

@@ -34,17 +34,32 @@ npm run dev:api      # Card Room backend :8787
 npm run dev:all
 ```
 
-Open [http://localhost:3000](http://localhost:3000) (arcade main floor) and  
-[http://localhost:3000/card-room](http://localhost:3000/card-room) (**The Pit** — Card Room).
+| Local | URL |
+|-------|-----|
+| Landing (typewriter) | [http://localhost:3000](http://localhost:3000) |
+| Arcade (Cabinet Hall) | [http://localhost:3000/arcade](http://localhost:3000/arcade) |
+| Card Room / The Pit | [http://localhost:3000/card-room](http://localhost:3000/card-room) |
 
 ### Live preview (GitHub Pages)
 
 | Surface | URL |
 |---------|-----|
-| Arcade | https://bryanxbt.github.io/coinup/ |
+| Landing | https://bryanxbt.github.io/coinup/ |
+| Arcade | https://bryanxbt.github.io/coinup/arcade/ |
 | **Card Room / The Pit** | https://bryanxbt.github.io/coinup/card-room/ |
 
-Static UI only on Pages. Live tables/ledger need the Card Room API (`server/`) elsewhere for full play; UI still loads for browsing.
+**Dual-deploy:** Pages hosts the static UI; Card Room API is a separate Node service (`server/`). Wire them with Fly.io + secrets — see [`docs/DUAL_DEPLOY.md`](docs/DUAL_DEPLOY.md).
+
+```bash
+# One-time API host (Fly) — details: docs/DUAL_DEPLOY.md
+export PATH="$HOME/.fly/bin:$PATH"
+fly auth login
+cd server
+fly apps create coinup-card-room-api
+fly secrets set SESSION_SECRET="$(openssl rand -hex 32)"
+fly deploy
+# Then set GH secret CR_API_URL=https://coinup-card-room-api.fly.dev and redeploy Pages
+```
 
 **Local Arch Network** (Bitcoin regtest + Titan + local_validator): see [`docs/LOCAL_ARCH.md`](docs/LOCAL_ARCH.md).
 
@@ -58,12 +73,13 @@ npm start
 ```
 src/
   app/
-    (arcade)/          # Floor 1 Cabinet Hall routes
-    (card-room)/       # Floor 2 Card Room UI
+    page.tsx           # Landing typewriter → enter arcade
+    (arcade)/          # /arcade Cabinet Hall + play + brand
+    (card-room)/       # /card-room The Pit UI
   components/          # ArcadeShell + CardRoomShell
-  games/               # Floor 1 game registry
+  games/               # Arcade game registry
   lib/payments/        # Sats types, mock + Arch stubs
-  lib/card-room/       # Floor 2 brand tokens
+  lib/card-room/       # Card Room brand tokens
 server/                # Card Room API (ledger, agents, tables — dual-deploy)
 docs/                  # Vision, architecture, Card Room design, local Arch
 programs/              # Arch Network on-chain programs (scaffold)

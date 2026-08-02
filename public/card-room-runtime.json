@@ -1,0 +1,6 @@
+{
+  "apiUrl": "",
+  "wsUrl": "",
+  "paymentsMode": "mock",
+  "_comment": "On GitHub Pages, set apiUrl to the public Card Room API (e.g. https://coinup-card-room-api.fly.dev). Empty apiUrl = ignore this file. Localhost always uses http://127.0.0.1:8787 unless NEXT_PUBLIC_CR_API_URL is set."
+}

@@ -2,11 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { CARD_ROOM } from "@/lib/card-room/brand";
 import { CARD_ROOM_GAMES, type CardRoomGame } from "@/lib/card-room/games-catalog";
-import { ensureHouseAgent } from "@/lib/card-room/house-agent";
 import { withBase } from "@/lib/paths";
 
 function GameCard({ game }: { game: CardRoomGame }) {
@@ -64,23 +61,6 @@ function GameCard({ game }: { game: CardRoomGame }) {
 }
 
 export default function CardRoomPitPage() {
-  const router = useRouter();
-  const [busy, setBusy] = useState<"house" | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const onHouseAgent = async () => {
-    setBusy("house");
-    setError(null);
-    try {
-      await ensureHouseAgent();
-      router.push(withBase("/card-room/games/holdem-cash/?tab=overview"));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not create house agent");
-    } finally {
-      setBusy(null);
-    }
-  };
-
   return (
     <div className="space-y-10">
       {/* The Pit hero */}
@@ -128,18 +108,16 @@ export default function CardRoomPitPage() {
           >
             Build an agent
           </Link>
-          <button
-            type="button"
-            disabled={busy === "house"}
-            onClick={() => void onHouseAgent()}
-            className="cr-btn-secondary justify-center py-4 disabled:opacity-50"
+          <Link
+            href={withBase("/card-room/agents/house")}
+            className="cr-btn-secondary justify-center py-4 text-center"
           >
-            {busy === "house" ? "Seating house bot…" : "Use a house agent"}
-          </button>
+            Use a house agent
+          </Link>
         </div>
         <p className="mt-3 text-xs text-[var(--cr-ivory)]/50">
-          House agents run the Card Room reference policy (guided). Skill agents
-          use your API key — see{" "}
+          House agents: pick a preset or tune tightness / aggression / bluff
+          knobs. Skill agents use your API key — see{" "}
           <Link
             href={withBase("/skills/card-room.md")}
             className="text-[var(--cr-brass)] underline-offset-2 hover:underline"
@@ -149,9 +127,6 @@ export default function CardRoomPitPage() {
           </Link>
           .
         </p>
-        {error && (
-          <p className="mt-2 text-sm text-[var(--cr-danger)]">{error}</p>
-        )}
       </section>
 
       {/* Game grid */}

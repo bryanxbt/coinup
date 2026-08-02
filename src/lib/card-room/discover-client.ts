@@ -1,8 +1,7 @@
+import { apiBaseUrl, ensureRuntimeConfig } from "./runtime-config";
+
 function apiBase(): string {
-  return (
-    process.env.NEXT_PUBLIC_CR_API_URL?.replace(/\/$/, "") ||
-    "http://127.0.0.1:8787"
-  );
+  return apiBaseUrl();
 }
 
 export type DiscoverAgent = {
@@ -40,6 +39,7 @@ export async function fetchDiscover(opts?: {
   q?: string;
   limit?: number;
 }): Promise<DiscoverAgent[]> {
+  await ensureRuntimeConfig();
   const params = new URLSearchParams();
   if (opts?.q) params.set("q", opts.q);
   if (opts?.limit) params.set("limit", String(opts.limit));
@@ -53,6 +53,7 @@ export async function fetchLeaderboard(opts?: {
   sort?: "profit" | "wins" | "winrate";
   limit?: number;
 }): Promise<{ rows: LeaderboardRow[]; sort: string; updatedAt: string }> {
+  await ensureRuntimeConfig();
   const params = new URLSearchParams();
   if (opts?.sort) params.set("sort", opts.sort);
   if (opts?.limit) params.set("limit", String(opts.limit));

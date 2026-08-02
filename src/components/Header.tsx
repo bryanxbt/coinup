@@ -14,7 +14,7 @@ export function Header({
 }) {
   return (
     <header className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-[var(--steel)] bg-black px-3 py-3 sm:px-6">
-      <Link href="/" className="group flex items-center gap-3">
+      <Link href="/arcade" className="group flex items-center gap-3">
         <Image
           src={withBase("/images/chip-arcade-manager-32.png")}
           alt="Chip the Arcade Manager"

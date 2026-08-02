@@ -43,8 +43,9 @@ export const metadata: Metadata = {
 
 /**
  * Minimal root layout — no floor chrome.
- * Floor 1: (arcade)/layout.tsx → ArcadeShell
- * Card Room / The Pit: (card-room)/layout.tsx → CardRoomShell
+ * / → landing typewriter (page.tsx)
+ * /arcade/* → (arcade)/layout.tsx → ArcadeShell
+ * /card-room/* → (card-room)/layout.tsx → CardRoomShell
  */
 export default function RootLayout({
   children,

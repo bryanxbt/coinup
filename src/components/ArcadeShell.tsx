@@ -1,8 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
-import { BootSequence } from "./arcade/BootSequence";
 import { Header } from "./Header";
 import {
   formatSats,
@@ -11,34 +9,13 @@ import {
 } from "@/lib/payments";
 import { getPlayerId } from "@/lib/player";
 
-const BOOT_KEY = "coinup.booted.v1";
-
+/**
+ * Floor chrome for Cabinet Hall + brand book + play cabinets.
+ * Landing lives at / (no shell). Entry is typewriter → /arcade.
+ */
 export function ArcadeShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
   const [balance, setBalance] = useState<ArcadeBalance | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [booting, setBooting] = useState(true);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    setHydrated(true);
-    try {
-      if (sessionStorage.getItem(BOOT_KEY) === "1") {
-        setBooting(false);
-      }
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const finishBoot = useCallback(() => {
-    setBooting(false);
-    try {
-      sessionStorage.setItem(BOOT_KEY, "1");
-    } catch {
-      /* ignore */
-    }
-  }, []);
 
   const refresh = useCallback(async () => {
     const bal = await mockPaymentClient.getBalance(getPlayerId());
@@ -67,11 +44,8 @@ export function ArcadeShell({ children }: { children: React.ReactNode }) {
     window.setTimeout(() => setToast(null), 2500);
   };
 
-  const showBoot = hydrated && booting && pathname === "/";
-
   return (
     <div className="arcade-root">
-      {showBoot && <BootSequence onDone={finishBoot} />}
       <Header balance={balance} onAddCoin={onAddCoin} />
       <div className="flex-1">{children}</div>
       {toast && (

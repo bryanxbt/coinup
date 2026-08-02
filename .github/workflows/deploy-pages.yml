@@ -23,10 +23,37 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-      - name: Install & build
+      - name: Install
+        run: npm ci
+      - name: Point Pages UI at public Card Room API
+        env:
+          CR_API_URL: ${{ secrets.CR_API_URL }}
+          NEXT_PUBLIC_CR_API_URL: ${{ secrets.NEXT_PUBLIC_CR_API_URL }}
+          PAYMENTS_MODE: ${{ secrets.NEXT_PUBLIC_PAYMENTS_MODE }}
         run: |
-          npm ci
-          npm run build
+          set -e
+          # Prefer dedicated CR_API_URL secret; fall back to NEXT_PUBLIC_CR_API_URL.
+          API="${CR_API_URL:-$NEXT_PUBLIC_CR_API_URL}"
+          API="${API%/}"
+          MODE="${PAYMENTS_MODE:-mock}"
+          if [ -n "$API" ]; then
+            WS="$(echo "$API" | sed 's|^http|ws|')/ws"
+            printf '%s\n' "{
+  \"apiUrl\": \"$API\",
+  \"wsUrl\": \"$WS\",
+  \"paymentsMode\": \"$MODE\"
+}" > public/card-room-runtime.json
+            echo "card-room-runtime.json → $API"
+            cat public/card-room-runtime.json
+          else
+            echo "No CR_API_URL secret — Pages Card Room stays offline for live ledger."
+          fi
+      - name: Build static export
+        env:
+          NEXT_PUBLIC_CR_API_URL: ${{ secrets.NEXT_PUBLIC_CR_API_URL }}
+          NEXT_PUBLIC_CR_WS_URL: ${{ secrets.NEXT_PUBLIC_CR_WS_URL }}
+          NEXT_PUBLIC_PAYMENTS_MODE: ${{ secrets.NEXT_PUBLIC_PAYMENTS_MODE }}
+        run: npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

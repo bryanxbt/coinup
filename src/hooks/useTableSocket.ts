@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ensureSession, getSessionToken } from "@/lib/card-room/session";
+import { ensureRuntimeConfig } from "@/lib/card-room/runtime-config";
 import { wsBase } from "@/lib/card-room/tables-client";
 
 export type WsServerMsg = {
@@ -27,6 +28,7 @@ export function useTableSocket(channel: string | null) {
   const connect = useCallback(async () => {
     if (!channel) return;
     try {
+      await ensureRuntimeConfig();
       await ensureSession();
       const token = getSessionToken();
       if (!token) throw new Error("no session");

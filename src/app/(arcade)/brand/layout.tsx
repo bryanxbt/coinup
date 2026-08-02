@@ -37,10 +37,10 @@ export default function BrandLayout({
           </Link>
           <BrandNav />
           <Link
-            href="/"
+            href="/arcade"
             className="mt-6 block px-2 font-pixel text-[8px] text-[#5c5c6b] hover:text-[var(--crt-green)]"
           >
-            ← LOBBY
+            ← ARCADE
           </Link>
         </div>
       </aside>
