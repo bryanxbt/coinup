@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { withBase } from "@/lib/paths";
 import {
   createHouseFromPreset,
   HOUSE_PRESETS,
@@ -45,7 +44,7 @@ export default function HouseAgentPage() {
         aggression,
         bluffFrequency: bluff,
       });
-      router.push(withBase("/card-room/games/holdem-cash/?tab=overview"));
+      router.push("/card-room/games/holdem-cash/?tab=overview");
     } catch (e) {
       setError(formatApiError(e, "Could not create house agent"));
     } finally {
@@ -145,12 +144,12 @@ export default function HouseAgentPage() {
           {busy ? "Creating…" : "Create & open Hold'em"}
         </button>
         <Link
-          href={withBase("/card-room/agents/create")}
+          href="/card-room/agents/create"
           className="cr-btn-secondary"
         >
           Full custom agent
         </Link>
-        <Link href={withBase("/card-room")} className="cr-btn-secondary">
+        <Link href="/card-room" className="cr-btn-secondary">
           ← The Pit
         </Link>
       </div>

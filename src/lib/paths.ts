@@ -1,6 +1,7 @@
 /**
- * Prefix public asset paths with the GitHub Pages basePath in production.
- * next/image does not always apply basePath for unoptimized static export.
+ * Prefix **public asset** paths with the GitHub Pages basePath in production.
+ * Use for img/src, fetch of static files, CSS url() — NOT for next/link or
+ * router.push (Next already applies `basePath` to app routes).
  */
 export function withBase(path: string): string {
   if (!path || path.startsWith("http") || path.startsWith("data:")) {

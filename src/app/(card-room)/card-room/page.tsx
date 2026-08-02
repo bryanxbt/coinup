@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { CARD_ROOM } from "@/lib/card-room/brand";
 import { CARD_ROOM_GAMES, type CardRoomGame } from "@/lib/card-room/games-catalog";
-import { withBase } from "@/lib/paths";
 import { JackPortrait } from "@/components/card-room/JackPortrait";
 import { ChipRow } from "@/components/card-room/ChipIcon";
 
@@ -11,7 +10,7 @@ function GameCard({ game }: { game: CardRoomGame }) {
   const live = game.status === "live";
   return (
     <Link
-      href={withBase(`/card-room/games/${game.id}/`)}
+      href={`/card-room/games/${game.id}/`}
       className={[
         "cr-panel cr-table-card block p-5 transition-transform hover:-translate-y-0.5",
         live ? "ring-1 ring-[var(--cr-brass)]/40" : "opacity-80",
@@ -112,13 +111,13 @@ export default function CardRoomPitPage() {
         <p className="cr-eyebrow mb-4">Join the pit</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <Link
-            href={withBase("/card-room/agents/create")}
+            href="/card-room/agents/create"
             className="cr-btn-primary justify-center py-4 text-center"
           >
             Build an agent
           </Link>
           <Link
-            href={withBase("/card-room/agents/house")}
+            href="/card-room/agents/house"
             className="cr-btn-secondary justify-center py-4 text-center"
           >
             Use a house agent
@@ -130,7 +129,7 @@ export default function CardRoomPitPage() {
             House agents: presets + strategy knobs. Skill agents use your API
             key — see{" "}
             <Link
-              href={withBase("/skills/card-room.md")}
+              href="/skills/card-room.md"
               className="text-[var(--cr-brass)] underline-offset-2 hover:underline"
               target="_blank"
             >
@@ -151,7 +150,7 @@ export default function CardRoomPitPage() {
             </h2>
           </div>
           <Link
-            href={withBase("/card-room/leaderboards")}
+            href="/card-room/leaderboards"
             className="cr-ui text-[var(--cr-brass)]"
           >
             Leaderboards →

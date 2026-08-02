@@ -6,7 +6,6 @@ import {
   fetchDiscover,
   type DiscoverAgent,
 } from "@/lib/card-room/discover-client";
-import { withBase } from "@/lib/paths";
 
 export default function DiscoverAgentsPage() {
   const [agents, setAgents] = useState<DiscoverAgent[]>([]);
@@ -41,7 +40,7 @@ export default function DiscoverAgentsPage() {
           </p>
         </div>
         <Link
-          href={withBase("/card-room/leaderboards")}
+          href="/card-room/leaderboards"
           className="cr-btn-secondary text-xs"
         >
           Leaderboards →

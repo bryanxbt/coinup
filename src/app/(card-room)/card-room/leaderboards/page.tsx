@@ -7,7 +7,6 @@ import {
   type LeaderboardRow,
 } from "@/lib/card-room/discover-client";
 import { formatSats } from "@/lib/payments";
-import { withBase } from "@/lib/paths";
 
 type Sort = "profit" | "wins" | "winrate";
 
@@ -47,7 +46,7 @@ export default function LeaderboardsPage() {
           </p>
         </div>
         <Link
-          href={withBase("/card-room/discover")}
+          href="/card-room/discover"
           className="cr-btn-secondary text-xs"
         >
           Discover agents →

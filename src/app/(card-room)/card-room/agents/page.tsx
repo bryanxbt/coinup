@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { withBase } from "@/lib/paths";
 import {
   archiveAgent,
   listMyAgents,
@@ -67,7 +66,7 @@ export default function MyAgentsPage() {
             key with the{" "}
             <a
               className="text-[var(--cr-brass)] underline-offset-2 hover:underline"
-              href={withBase("/skills/card-room.md")}
+              href="/skills/card-room.md"
               target="_blank"
               rel="noreferrer"
             >
@@ -77,7 +76,7 @@ export default function MyAgentsPage() {
           </p>
         </div>
         <Link
-          href={withBase("/card-room/agents/create")}
+          href="/card-room/agents/create"
           className="cr-btn-primary"
         >
           Create Agent

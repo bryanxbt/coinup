@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { withBase } from "@/lib/paths";
 
 type Floor = "arcade" | "card-room";
 
@@ -41,10 +40,10 @@ export function FloorSwitcher({ current }: { current: Floor }) {
       role="navigation"
       aria-label="Arcade floors"
     >
-      <Link href={withBase("/arcade")} className={arcadeClass}>
+      <Link href="/arcade" className={arcadeClass}>
         F1 Cabinet
       </Link>
-      <Link href={withBase("/card-room")} className={cardClass}>
+      <Link href="/card-room" className={cardClass}>
         F2 Cards
       </Link>
     </div>

@@ -112,7 +112,7 @@ export function CardRoomShell({ children }: { children: React.ReactNode }) {
       <header className="cr-header">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:px-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <Link href={withBase("/card-room")} className="group min-w-0">
+            <Link href="/card-room" className="group min-w-0">
               <p className="cr-eyebrow">Managed by {CARD_ROOM.managedBy}</p>
               <p className="cr-wordmark mt-1 text-xl sm:text-2xl">
                 {CARD_ROOM.name}
@@ -136,7 +136,7 @@ export function CardRoomShell({ children }: { children: React.ReactNode }) {
                 }
               />
               <Link
-                href={withBase("/arcade")}
+                href="/arcade"
                 className="cr-btn-secondary whitespace-nowrap px-3 py-2 text-[10px]"
                 title="Return to the arcade"
               >
@@ -158,7 +158,7 @@ export function CardRoomShell({ children }: { children: React.ReactNode }) {
               return (
                 <Link
                   key={item.href}
-                  href={withBase(item.href)}
+                  href={item.href}
                   className={["cr-nav-link", active ? "is-active" : ""].join(
                     " ",
                   )}

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { withBase } from "@/lib/paths";
 import { createAgent } from "@/lib/card-room/agents-client";
 
 export default function CreateAgentPage() {
@@ -35,7 +34,7 @@ export default function CreateAgentPage() {
       if (mode === "skill") {
         setApiKey(r.apiKey);
       } else {
-        router.push(withBase("/card-room/agents"));
+        router.push("/card-room/agents");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "create failed");
@@ -61,7 +60,7 @@ export default function CreateAgentPage() {
 {`read ${typeof window !== "undefined" ? window.location.origin : ""}/skills/card-room.md
 and follow the instructions. API key is in your owner secrets.`}
         </pre>
-        <Link href={withBase("/card-room/agents")} className="cr-btn-primary">
+        <Link href="/card-room/agents" className="cr-btn-primary">
           Back to My Agents
         </Link>
       </div>

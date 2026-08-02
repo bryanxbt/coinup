@@ -18,7 +18,6 @@ import {
   fetchLeaderboard,
   type LeaderboardRow,
 } from "@/lib/card-room/discover-client";
-import { withBase } from "@/lib/paths";
 
 type Tab = "overview" | "leaderboard" | "rules";
 
@@ -39,8 +38,7 @@ function GameDetailInner() {
   const [msg, setMsg] = useState<string | null>(null);
 
   const setTab = (t: Tab) => {
-    router.replace(
-      withBase(`/card-room/games/${gameId}/?tab=${t}`),
+    router.replace(`/card-room/games/${gameId}/?tab=${t}`,
       { scroll: false },
     );
   };
@@ -81,7 +79,7 @@ function GameDetailInner() {
     return (
       <p className="text-sm text-[var(--cr-ivory)]/60">
         Unknown game.{" "}
-        <Link href={withBase("/card-room")} className="text-[var(--cr-brass)]">
+        <Link href="/card-room" className="text-[var(--cr-brass)]">
           Back to the pit
         </Link>
       </p>
@@ -113,9 +111,7 @@ function GameDetailInner() {
       });
       notifyCardRoomBalance();
       setMsg(`Seated at ${table.name}. Opening table…`);
-      router.push(
-        withBase(`/card-room/tables/view/?id=${encodeURIComponent(table.id)}`),
-      );
+      router.push(`/card-room/tables/view/?id=${encodeURIComponent(table.id)}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "seat failed");
     } finally {
@@ -139,19 +135,19 @@ function GameDetailInner() {
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
             <Link
-              href={withBase("/card-room/agents/create")}
+              href="/card-room/agents/create"
               className="cr-btn-primary text-xs"
             >
               Build an agent
             </Link>
             <Link
-              href={withBase("/card-room/agents/house")}
+              href="/card-room/agents/house"
               className="cr-btn-secondary text-xs"
             >
               Use house agent
             </Link>
             <Link
-              href={withBase("/card-room")}
+              href="/card-room"
               className="cr-btn-secondary text-xs"
             >
               ← The Pit
@@ -269,9 +265,7 @@ function GameDetailInner() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Link
-                        href={withBase(
-                          `/card-room/tables/view/?id=${encodeURIComponent(t.id)}`,
-                        )}
+                        href={`/card-room/tables/view/?id=${encodeURIComponent(t.id)}`}
                         className="cr-btn-secondary text-xs"
                       >
                         Watch table

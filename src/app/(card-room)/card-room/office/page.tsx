@@ -7,7 +7,6 @@ import {
   fetchOfficeRules,
   type OfficeRules,
 } from "@/lib/card-room/history-client";
-import { withBase } from "@/lib/paths";
 import { JackPortrait } from "@/components/card-room/JackPortrait";
 
 export default function JacksOfficePage() {
@@ -110,7 +109,7 @@ export default function JacksOfficePage() {
           </dl>
         )}
         <Link
-          href={withBase("/card-room/history")}
+          href="/card-room/history"
           className="cr-btn-secondary mt-4 inline-flex text-xs"
         >
           Open hand history →

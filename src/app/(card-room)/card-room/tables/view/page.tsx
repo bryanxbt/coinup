@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo } from "react";
-import { withBase } from "@/lib/paths";
 import { useTableSocket } from "@/hooks/useTableSocket";
 import { PokerTable, type TableSeatView } from "@/components/card-room/PokerTable";
 
@@ -56,7 +55,7 @@ function TableWatchInner() {
       <p className="text-sm text-[var(--cr-ivory)]/60">
         Missing table id.{" "}
         <Link
-          href={withBase("/card-room/games/holdem-cash/")}
+          href="/card-room/games/holdem-cash/"
           className="text-[var(--cr-brass)]"
         >
           Back to Hold&apos;em Cash
@@ -90,13 +89,13 @@ function TableWatchInner() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
-            href={withBase("/card-room/games/holdem-cash/?tab=overview")}
+            href="/card-room/games/holdem-cash/?tab=overview"
             className="cr-btn-secondary text-xs"
           >
             ← Game lobby
           </Link>
           <Link
-            href={withBase("/card-room")}
+            href="/card-room"
             className="cr-btn-secondary text-xs"
           >
             The Pit

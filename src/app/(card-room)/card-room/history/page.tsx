@@ -7,7 +7,6 @@ import {
   type HandHistory,
 } from "@/lib/card-room/history-client";
 import { formatSats } from "@/lib/payments";
-import { withBase } from "@/lib/paths";
 
 export default function HandHistoryPage() {
   const [hands, setHands] = useState<HandHistory[]>([]);
@@ -42,7 +41,7 @@ export default function HandHistoryPage() {
           </p>
         </div>
         <Link
-          href={withBase("/card-room/office")}
+          href="/card-room/office"
           className="cr-btn-secondary text-xs"
         >
           Jack&apos;s Office
