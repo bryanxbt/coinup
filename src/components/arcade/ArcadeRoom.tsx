@@ -8,7 +8,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { getFloorCabinets } from "@/lib/arcade-floor";
-import { withBase } from "@/lib/paths";
 
 const ROOM_W = 18 * 32;
 const ROOM_H = 12 * 32;
@@ -26,7 +25,8 @@ export function ArcadeRoom() {
         window.open(externalUrl, "_blank", "noreferrer");
         return;
       }
-      router.push(withBase(`/play/${gameId}`));
+      // Next.js applies basePath to app routes — do not withBase here
+      router.push(`/play/${gameId}`);
     },
     [router],
   );
@@ -58,11 +58,6 @@ export function ArcadeRoom() {
           autoCenter: Phaser.Scale.CENTER_BOTH,
         },
         scene: [ArcadeScene],
-        callbacks: {
-          postBoot: () => {
-            // scene receives data via scene.start in postBoot
-          },
-        },
       });
 
       game.scene.start("ArcadeScene", {
