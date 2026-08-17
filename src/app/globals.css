@@ -1,17 +1,3 @@
 @import "tailwindcss";
+@import "../styles/arcade-core.css";
 @import "../styles/cabinet-transitions.css";
-
-/* Brand Book v1.0 + arcade CRT */
-:root {
-  --background: #000012;
-  --foreground: #ffffff;
-  --neon-cyan: #00d0ff;
-  --neon-magenta: #ff4ec7;
-  --neon-amber: #fcc76e;
-  --varsity-blue: #2962ff;
-  --varsity-gold: #fcc76e;
-  --crt-green: #00de76;
-  --orange: #ff5a00;
-  --panel: #14141a;
-  --steel: #2a2a33;
-}
