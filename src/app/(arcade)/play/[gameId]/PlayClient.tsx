@@ -1,21 +1,38 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { TypeText } from "@/components/arcade/TypeText";
 import { getGame } from "@/games/registry";
 import type { GameMeta, GameSession } from "@/games/types";
 import { formatSats, mockPaymentClient } from "@/lib/payments";
 import { getPlayerId } from "@/lib/player";
 
-type Phase = "ready" | "playing" | "error";
+type Phase = "booting" | "ready" | "playing" | "error";
 
 export function PlayClient({ meta }: { meta: GameMeta }) {
   const module = useMemo(() => getGame(meta.id), [meta.id]);
-  const [phase, setPhase] = useState<Phase>("ready");
+  const [phase, setPhase] = useState<Phase>("booting");
   const [session, setSession] = useState<GameSession | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastScore, setLastScore] = useState<number | null>(null);
+  const [bootLine, setBootLine] = useState(0);
+
+  // Short CRT power-on sequence before the ready panel
+  useEffect(() => {
+    if (phase !== "booting") return;
+    const lines = [0, 1, 2, 3];
+    let i = 0;
+    const t = window.setInterval(() => {
+      i += 1;
+      setBootLine(i);
+      if (i >= lines.length) {
+        window.clearInterval(t);
+        window.setTimeout(() => setPhase("ready"), 180);
+      }
+    }, 110);
+    return () => window.clearInterval(t);
+  }, [phase]);
 
   const insertCoin = useCallback(async () => {
     setError(null);
@@ -75,7 +92,29 @@ export function PlayClient({ meta }: { meta: GameMeta }) {
           : "arcade-grid mx-auto flex max-w-3xl flex-col items-center px-4 py-10"
       }
     >
-      {!fullBleed && (
+      {/* CRT power-on boot */}
+      {phase === "booting" && (
+        <div className="pixel-panel flex w-full max-w-sm flex-col items-start gap-2 border-[var(--crt-green)] px-6 py-8">
+          <p className="font-pixel text-[9px] text-[var(--crt-green)]">
+            {bootLine >= 0 && "COINUP ARCADE OS v0.9"}
+          </p>
+          <p className="font-pixel text-[8px] text-[var(--crt-green)] opacity-80">
+            {bootLine >= 1 && `CABINET: ${meta.title.toUpperCase()}`}
+          </p>
+          <p className="font-pixel text-[8px] text-[var(--crt-green)] opacity-70">
+            {bootLine >= 2 && "CHECKING CREDIT… OK"}
+          </p>
+          <p className="font-pixel text-[8px] text-[var(--crt-green)] opacity-90">
+            {bootLine >= 3 && (
+              <>
+                READY <span className="type-cursor type-cursor--blink">_</span>
+              </>
+            )}
+          </p>
+        </div>
+      )}
+
+      {phase !== "booting" && !fullBleed && (
         <div className="mb-8 w-full text-center">
           <p className="font-pixel text-[8px] text-[#5c5c6b]">CABINET</p>
           <h1 className="mt-2 font-pixel text-sm text-white sm:text-base">
@@ -109,7 +148,7 @@ export function PlayClient({ meta }: { meta: GameMeta }) {
       )}
 
       {phase === "ready" && (
-        <div className="pixel-panel flex w-full max-w-sm flex-col items-center gap-5 border-[var(--neon-amber)] px-8 py-10">
+        <div className="pixel-panel flex w-full max-w-sm flex-col items-center gap-5 border-[var(--neon-amber)] px-8 py-10 animate-cabinet-ready">
           <div className="text-5xl">{meta.glyph}</div>
           {meta.id === "crazy-wheel" && (
             <p className="text-center font-pixel text-[8px] leading-relaxed text-[#8a8a9a]">
