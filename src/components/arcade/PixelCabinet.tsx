@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
 import type { GameMeta } from "@/games/types";
 import { formatSats } from "@/lib/payments";
 
@@ -13,14 +15,40 @@ type Props = {
 /**
  * Front-facing cabinet sprite (CSS pixel machine).
  * Brand ch.10: marquee · screen · body · coin door · accent neon.
+ * Click on playable cabinets plays a short coin-insert animation before navigate.
  */
 export function PixelCabinet({ game, selected, onSelect }: Props) {
+  const router = useRouter();
   const playable = game.status === "playable";
   const accent = game.accent;
+  const [inserting, setInserting] = useState(false);
 
   const className = `cabinet group relative w-[104px] shrink-0 border-0 bg-transparent p-0 text-left no-underline sm:w-[120px] ${
     selected ? "cabinet--selected" : ""
-  } ${playable ? "cabinet--live" : "cabinet--soon"}`;
+  } ${playable ? "cabinet--live" : "cabinet--soon"} ${
+    inserting ? "cabinet--inserting" : ""
+  }`;
+
+  const handlePlayableClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (inserting) {
+        e.preventDefault();
+        return;
+      }
+      onSelect?.();
+
+      // External cabinets open immediately
+      if (game.externalUrl) return;
+
+      // Internal cabinets: short coin-insert feedback then navigate
+      e.preventDefault();
+      setInserting(true);
+      window.setTimeout(() => {
+        router.push(`/play/${game.id}`);
+      }, 320);
+    },
+    [game.externalUrl, game.id, inserting, onSelect, router],
+  );
 
   const body = (
     <>
@@ -33,7 +61,9 @@ export function PixelCabinet({ game, selected, onSelect }: Props) {
           <span className="cabinet-glyph" aria-hidden>
             {game.glyph}
           </span>
-          {playable ? (
+          {inserting ? (
+            <span className="cabinet-attract cabinet-attract--insert">COIN</span>
+          ) : playable ? (
             <span className="cabinet-attract">INSERT</span>
           ) : (
             <span className="cabinet-attract cabinet-attract--dim">SOON</span>
@@ -52,6 +82,7 @@ export function PixelCabinet({ game, selected, onSelect }: Props) {
         </div>
         <div className="cabinet-coin">
           <span className="cabinet-slot" />
+          {inserting && <span className="cabinet-coin-drop" aria-hidden />}
         </div>
       </div>
 
@@ -81,7 +112,7 @@ export function PixelCabinet({ game, selected, onSelect }: Props) {
           className={`${className} cursor-pointer`}
           style={{ ["--cab-accent" as string]: accent }}
           aria-label={`${game.title} — play on $SOLE`}
-          onClick={onSelect}
+          onClick={handlePlayableClick}
         >
           {body}
         </a>
@@ -93,7 +124,7 @@ export function PixelCabinet({ game, selected, onSelect }: Props) {
         className={`${className} cursor-pointer`}
         style={{ ["--cab-accent" as string]: accent }}
         aria-label={`${game.title} — play`}
-        onClick={onSelect}
+        onClick={handlePlayableClick}
       >
         {body}
       </Link>
