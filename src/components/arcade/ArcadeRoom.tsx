@@ -7,7 +7,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { getFloorCabinets } from "@/lib/arcade-floor";
-import { VIEW_W, VIEW_H } from "@/components/arcade/room/ArcadeScene";
+import { VIEW_W, VIEW_H } from "@/components/arcade/room/constants";
 
 export function ArcadeRoom() {
   const hostRef = useRef<HTMLDivElement>(null);
