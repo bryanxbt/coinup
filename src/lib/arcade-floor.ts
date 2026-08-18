@@ -1,6 +1,7 @@
 /**
- * Cabinet Hall layout — brand book ch.09 / ch.10
- * Grid coordinates are aisle positions on the pixel floor (col, row).
+ * Cabinet Hall layout — dual-aisle floor that scales toward ~20 cabinets.
+ * side: 0 = left aisle, 1 = right aisle
+ * index: position down the aisle (0 = front / near entrance)
  */
 
 import type { GameMeta } from "@/games/types";
@@ -8,24 +9,25 @@ import { listLobbyGames } from "@/games/registry";
 
 export type FloorSlot = {
   gameId: string;
-  /** 0-based column on the floor grid */
-  col: number;
-  /** 0-based row (aisle) */
-  row: number;
-  /** Optional rotation label for lore (facing camera default) */
-  facing?: "front";
+  /** 0 = left aisle, 1 = right aisle */
+  side: 0 | 1;
+  /** 0-based position down the aisle */
+  index: number;
 };
 
-/** Fixed floor map for the forever roster — expand here when cabinets arrive */
+/**
+ * Floor map — add new cabinets by appending with next index on either side.
+ * Current roster: 8. Room code supports growth without layout rewrite.
+ */
 export const FLOOR_SLOTS: FloorSlot[] = [
-  { gameId: "coin-drop", col: 0, row: 0 },
-  { gameId: "sole-dodgeball", col: 1, row: 0 },
-  { gameId: "pixel-racer", col: 2, row: 0 },
-  { gameId: "rocket-run", col: 3, row: 0 },
-  { gameId: "crazy-wheel", col: 0, row: 1 },
-  { gameId: "memory-matrix", col: 1, row: 1 },
-  { gameId: "block-stacker", col: 2, row: 1 },
-  { gameId: "rock-paper-scissors", col: 3, row: 1 },
+  { gameId: "coin-drop", side: 0, index: 0 },
+  { gameId: "sole-dodgeball", side: 0, index: 1 },
+  { gameId: "pixel-racer", side: 0, index: 2 },
+  { gameId: "rocket-run", side: 0, index: 3 },
+  { gameId: "crazy-wheel", side: 1, index: 0 },
+  { gameId: "memory-matrix", side: 1, index: 1 },
+  { gameId: "block-stacker", side: 1, index: 2 },
+  { gameId: "rock-paper-scissors", side: 1, index: 3 },
 ];
 
 export type PlacedCabinet = FloorSlot & {
